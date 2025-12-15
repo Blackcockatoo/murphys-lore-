@@ -1,0 +1,1151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Murphy's Leap | Golden Frog · Murphy's Law Arcade</title>
+  <style>
+    :root{
+      --bg:#070b22;
+      --bg2:#0a0e27;
+      --gold:#ffd700;
+      --ice:#9db4ff;
+      --hot:#ff6b35;
+      --violet:#8338ec;
+      --mint:#06ffa5;
+      --red:#ff4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:radial-gradient(circle at 50% 20%, #12184a 0%, var(--bg) 45%, #040615 100%);
+      color:var(--gold);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow:hidden;
+    }
+    body::before{
+      content:"";
+      position:fixed; inset:-40%;
+      background:
+        radial-gradient(circle at 50% 50%, transparent 30%, rgba(255,215,0,.03) 31%, transparent 32%),
+        conic-gradient(from 0deg at 50% 50%,
+          transparent 0deg,
+          rgba(255,215,0,.05) 51.43deg,
+          transparent 51.43deg 102.86deg,
+          rgba(255,215,0,.05) 102.86deg 154.29deg,
+          transparent 154.29deg 205.71deg,
+          rgba(255,215,0,.05) 205.71deg 257.14deg,
+          transparent 257.14deg 308.57deg,
+          rgba(255,215,0,.05) 308.57deg 360deg);
+      animation: spin 42s linear infinite;
+      pointer-events:none;
+      opacity:.8;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    #wrap{
+      position:fixed; inset:0;
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+    }
+    header{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 14px;
+      background:linear-gradient(180deg, rgba(10,14,39,.92), rgba(10,14,39,.55));
+      border-bottom:1px solid rgba(255,215,0,.18);
+      backdrop-filter: blur(6px);
+      position:relative;
+      z-index:2;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900;
+      letter-spacing:.8px;
+      text-shadow: 0 0 16px rgba(255,215,0,.35);
+      white-space:nowrap;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid rgba(255,215,0,.22);
+      border-radius:999px;
+      padding:6px 12px;
+      background:rgba(255,215,0,.06);
+      color:var(--ice);
+      font-weight:700;
+      font-size:12px;
+    }
+    .pill b{color:var(--gold)}
+    .btn{
+      appearance:none;
+      border:1px solid rgba(255,215,0,.35);
+      background:linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.92));
+      color:#0a0e27;
+      font-weight:900;
+      border-radius:999px;
+      padding:9px 14px;
+      cursor:pointer;
+      box-shadow:0 10px 24px rgba(255,215,0,.16);
+      transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;
+      font-size:13px;
+    }
+    .btn:hover{box-shadow:0 12px 30px rgba(255,215,0,.24)}
+    .btn:active{transform:translateY(1px); filter:saturate(1.1); box-shadow:0 6px 16px rgba(255,215,0,.20)}
+    .btn.ghost{background:rgba(255,215,0,.06); color:var(--gold)}
+
+    #hud{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-start}
+    #hud .stat{font-size:12px; color:#e0e7ff; opacity:.95}
+    #hud .stat b{color:var(--gold); font-size:13px}
+    #meter{width:180px; height:10px; border-radius:999px; border:1px solid rgba(255,215,0,.25); background:rgba(0,0,0,.25); overflow:hidden; box-shadow: inset 0 0 8px rgba(0,0,0,.35)}
+    #meter > i{display:block; height:100%; width:0%; background:linear-gradient(90deg, rgba(255,215,0,.95), rgba(6,255,165,.9)); box-shadow:0 0 14px rgba(255,215,0,.45); transition: width 0.3s ease}
+    #loreBar{width:100px; height:8px; border-radius:999px; border:1px solid rgba(6,255,165,.35); background:rgba(0,0,0,.25); overflow:hidden}
+    #loreBar > i{display:block; height:100%; width:0%; background:linear-gradient(90deg, rgba(6,255,165,.9), rgba(6,255,165,.6)); box-shadow:0 0 10px rgba(6,255,165,.35); transition: width 0.2s ease}
+
+    main{position:relative; z-index:1; display:grid; place-items:center; padding:10px}
+    #game{
+      width:min(92vw, 980px);
+      height:min(74vh, 720px);
+      border-radius:18px;
+      border:2px solid rgba(255,215,0,.35);
+      background:linear-gradient(180deg, rgba(0,8,20,.75), rgba(0,8,20,.55));
+      box-shadow: 0 20px 60px rgba(0,0,0,.55), 0 0 30px rgba(255,215,0,.12);
+      display:block;
+      touch-action:none;
+    }
+
+    footer{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; background:linear-gradient(180deg, rgba(10,14,39,.55), rgba(10,14,39,.92)); border-top:1px solid rgba(255,215,0,.18); backdrop-filter: blur(6px); position:relative; z-index:2}
+    .help{color:#e0e7ff; font-size:12px; opacity:.92}
+    kbd{font:inherit; font-weight:900; background:rgba(255,215,0,.08); border:1px solid rgba(255,215,0,.22); border-bottom-color:rgba(255,215,0,.35); padding:2px 6px; border-radius:8px; color:var(--gold)}
+
+    #overlay{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none}
+    .panel{pointer-events:auto; width:min(92vw, 720px); border-radius:22px; border:1px solid rgba(255,215,0,.28); background:rgba(7,11,34,.76); box-shadow: 0 30px 90px rgba(0,0,0,.65), 0 0 40px rgba(255,215,0,.10); padding:20px 20px 18px; backdrop-filter: blur(10px)}
+    .panel h1{margin:0 0 6px; font-size:32px; letter-spacing:1px; text-shadow: 0 0 18px rgba(255,215,0,.35); font-weight:1000}
+    .panel p{margin:0 0 12px; color:#e0e7ff; line-height:1.5; font-size:14px}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .row .btn{pointer-events:auto}
+    .tagline{margin-top:12px; font-weight:1000; font-size:18px; color:var(--gold); text-shadow: 0 0 20px rgba(255,215,0,.35)}
+    .tiny{font-size:12px; color:rgba(224,231,255,.9); opacity:.92}
+    .murphy-banner{margin:10px 0 0; padding:10px 12px; border-radius:14px; border:1px solid rgba(255,68,68,.28); background:rgba(255,68,68,.09); color:#ffe8e8; font-weight:900; text-shadow:0 0 12px rgba(255,68,68,.25); display:none}
+    .murphy-banner.show{display:block}
+    .lore-banner{margin:8px 0 0; padding:10px 12px; border-radius:14px; border:1px solid rgba(6,255,165,.22); background:rgba(6,255,165,.08); color:#eafff6; font-weight:900; text-shadow:0 0 12px rgba(6,255,165,.22); display:none}
+    .lore-banner.show{display:block}
+    .highscore{margin-top:8px; font-size:13px; color:var(--mint)}
+
+    #stick{position:absolute; left:18px; bottom:18px; width:120px; height:120px; border-radius:999px; background:rgba(255,215,0,.06); border:1px solid rgba(255,215,0,.22); display:none; z-index:3}
+    #stick i{position:absolute; left:50%; top:50%; width:48px; height:48px; border-radius:999px; transform:translate(-50%,-50%); background:rgba(255,215,0,.18); border:1px solid rgba(255,215,0,.28); box-shadow:0 0 18px rgba(255,215,0,.18); transition: transform 0.1s ease}
+    @media (hover:none) and (pointer:coarse){#stick{display:block}}
+
+    @keyframes popFloat {
+      0% { transform: translate(-50%, 0) scale(0.8); opacity: 0; }
+      15% { transform: translate(-50%, -8px) scale(1.1); opacity: 1; }
+      85% { transform: translate(-50%, -25px) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -40px) scale(0.9); opacity: 0; }
+    }
+    .popup {position: absolute; left: 50%; transform: translate(-50%, 0); font-weight: 1000; pointer-events: none; animation: popFloat 1s ease-out forwards; z-index: 100}
+    .popup.combo {top: 30%; font-size: 26px; color: var(--gold); text-shadow: 0 0 20px rgba(255,215,0,.5)}
+    .popup.murphy {top: 20%; font-size: 20px; color: var(--red); text-shadow: 0 0 20px rgba(255,68,68,.5)}
+    .popup.lore {top: 25%; font-size: 18px; color: var(--mint); text-shadow: 0 0 20px rgba(6,255,165,.5)}
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <header>
+      <div class="brand">
+        <span aria-hidden="true">🐸</span>
+        <span>MURPHY'S LEAP</span>
+        <span class="pill"><b>GOLDEN FROG</b> · Murphy's Law Arcade</span>
+      </div>
+      <div id="hud">
+        <div class="stat">SCORE: <b id="score">0</b></div>
+        <div class="stat">LEVEL: <b id="level">1</b></div>
+        <div class="stat">LIVES: <b id="lives">3</b></div>
+        <div class="stat">MODE: <b id="mode">FAIRPLAY</b></div>
+        <div id="meter"><i></i></div>
+        <div class="stat">LORE:</div>
+        <div id="loreBar"><i></i></div>
+      </div>
+    </header>
+    <main>
+      <canvas id="game"></canvas>
+      <div id="overlay"></div>
+      <div id="stick"><i></i></div>
+    </main>
+    <footer>
+      <div class="help">
+        <kbd>WASD</kbd> / <kbd>↑←↓→</kbd> move · <kbd>SPACE</kbd> cancel Murphy event · Collect <span style="color:var(--gold)">●</span> & <span style="color:var(--mint)">⬢</span>
+      </div>
+      <button class="btn ghost" onclick="location.reload()">RESTART</button>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  'use strict';
+
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+
+  // Audio
+  let audioCtx;
+  function initAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+  function tone(freq, dur=0.08, type='sine', vol=0.12){
+    if(!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    g.gain.value = vol;
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start();
+    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+    osc.stop(audioCtx.currentTime + dur);
+  }
+  const SFX = {
+    hop: () => tone(520, 0.04, 'square', 0.08),
+    pellet: () => tone(880, 0.05, 'square', 0.10),
+    lore: () => { tone(1320, 0.07, 'sine', 0.12); setTimeout(() => tone(1760, 0.07, 'sine', 0.12), 40); },
+    death: () => { for(let i=0;i<4;i++) setTimeout(() => tone(400-i*70, 0.1, 'sawtooth', 0.15), i*50); },
+    levelUp: () => { tone(523, 0.08, 'square', 0.12); setTimeout(() => tone(659, 0.08, 'square', 0.12), 80); setTimeout(() => tone(784, 0.12, 'square', 0.12), 160); },
+    murphy: () => { tone(180, 0.15, 'sawtooth', 0.15); setTimeout(() => tone(140, 0.2, 'sawtooth', 0.12), 80); },
+    cancel: () => { tone(880, 0.06, 'sine', 0.15); setTimeout(() => tone(1100, 0.06, 'sine', 0.15), 50); setTimeout(() => tone(1320, 0.08, 'sine', 0.15), 100); },
+    shield: () => tone(1100, 0.1, 'sine', 0.15)
+  };
+
+  // Particles
+  const particles = [];
+  function spawnParticles(x, y, color, count=6){
+    for(let i=0; i<count; i++){
+      const a = (Math.PI*2/count)*i + Math.random()*0.4;
+      particles.push({ x, y, vx: Math.cos(a)*(2+Math.random()*2), vy: Math.sin(a)*(2+Math.random()*2), life: 1, decay: 0.02+Math.random()*0.015, color, size: 2+Math.random()*3 });
+    }
+  }
+  function updateParticles(){
+    for(let i=particles.length-1; i>=0; i--){
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      p.vx *= 0.96; p.vy *= 0.96;
+      p.life -= p.decay;
+      if(p.life <= 0) particles.splice(i, 1);
+    }
+  }
+  function drawParticles(){
+    ctx.save();
+    for(const p of particles){
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Popups
+  function popup(text, type){
+    const el = document.createElement('div');
+    el.className = 'popup ' + type;
+    el.textContent = text;
+    document.getElementById('overlay').appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  }
+
+  // World
+  const WORLD = { cols: 17, rows: 13, tile: 50 };
+
+  // Difficulty paths (2 syllables; not "LAW" / "LORE")
+  // FAIRPLAY: fair-but-sweaty, skill-building, more Lore control
+  // MAYHEM: pure Murphy chaos, harsher + faster, fewer outs
+  const MODES = {
+    FAIRPLAY: {
+      name: 'FAIRPLAY',
+      tagline: 'Fair, sweaty, learnable.',
+      maxLore: 4,
+      loreCancelCost: 1,
+      loreRemovesWalls: true,
+      murphyInterval: 6.3,
+      murphyChanceBase: 0.12,
+      murphyChancePerLevel: 0.04,
+      murphyDurMul: 1.0,
+      wallDurMul: 1.0,
+      trafficMul: 1.0,
+      ghostMoveDelay: 0.42,
+      ghostMoodBase: 0.26,
+      ghostMoodPerLevel: 0.05,
+      ghostRageBoost: 0.25,
+      respawnShield: 2.0,
+      loreCountBase: 2,
+      loreCountDiv: 2
+    },
+    MAYHEM: {
+      name: 'MAYHEM',
+      tagline: 'Pure chaos. Brutal luck.',
+      maxLore: 2,
+      loreCancelCost: 2,
+      loreRemovesWalls: false,
+      murphyInterval: 4.4,
+      murphyChanceBase: 0.22,
+      murphyChancePerLevel: 0.06,
+      murphyDurMul: 1.25,
+      wallDurMul: 1.35,
+      trafficMul: 1.12,
+      ghostMoveDelay: 0.32,
+      ghostMoodBase: 0.32,
+      ghostMoodPerLevel: 0.06,
+      ghostRageBoost: 0.35,
+      respawnShield: 1.4,
+      loreCountBase: 1,
+      loreCountDiv: 3
+    }
+  };
+
+  const state = {
+    screen: 'title', t: 0, score: 0, lives: 3, level: 1,
+    totalPellets: 0, collected: 0, lore: 0, maxLore: MODES.FAIRPLAY.maxLore,
+    mode: 'FAIRPLAY',
+    invert: 0, blackout: 0, slip: 0, trafficSlow: 0, shield: 0, freeze: 0, speed: 0
+  };
+
+  function modeCfg(){ return MODES[state.mode] || MODES.FAIRPLAY; }
+  function setMode(m){ state.mode = (m === 'MAYHEM') ? 'MAYHEM' : 'FAIRPLAY'; state.maxLore = modeCfg().maxLore; updateHUD(); showTitle(); }
+  window.setMode = setMode;
+
+  const player = { col: 0, row: 0, lastMove: 0 };
+  const ghost = { col: 0, row: 0, mood: 0.3, lastMove: 0 };
+  const lanes = [], pellets = [], loreOrbs = [], walls = [];
+  const keys = {};
+  let stickPos = { x: 0, y: 0 };
+
+  // High score
+  let highScore = 0;
+  try { highScore = parseInt(localStorage.getItem('murphysLeapHS') || '0'); } catch(e){}
+  function saveHS(){ try { if(state.score > highScore){ highScore = state.score; localStorage.setItem('murphysLeapHS', highScore.toString()); } } catch(e){} }
+
+  // Input
+  document.addEventListener('keydown', e => {
+    if(state.screen === 'title' && (e.key.startsWith('Arrow') || 'wasd '.includes(e.key.toLowerCase()))){
+      initAudio(); startGame(); e.preventDefault(); return;
+    }
+    keys[e.key] = true;
+    if(e.key === ' '){
+      if(state.screen === 'play') useLore();
+      else if(state.screen === 'pause') resumeGame();
+      e.preventDefault();
+    }
+    if(e.key === 'Escape' && state.screen === 'play'){ showPause(); e.preventDefault(); }
+  });
+  document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+  // Touch stick
+  let stickTouch = null;
+  document.getElementById('stick').addEventListener('touchstart', e => {
+    e.preventDefault(); initAudio();
+    if(state.screen === 'title'){ startGame(); return; }
+    stickTouch = e.touches[0].identifier;
+    updateStick(e.touches[0]);
+  });
+  document.addEventListener('touchmove', e => {
+    if(stickTouch === null) return;
+    for(let i=0; i<e.touches.length; i++){
+      if(e.touches[i].identifier === stickTouch){ updateStick(e.touches[i]); e.preventDefault(); break; }
+    }
+  });
+  document.addEventListener('touchend', e => {
+    for(let i=0; i<e.changedTouches.length; i++){
+      if(e.changedTouches[i].identifier === stickTouch){
+        stickTouch = null; stickPos = {x:0,y:0};
+        document.querySelector('#stick i').style.transform = 'translate(-50%,-50%)';
+        e.preventDefault(); break;
+      }
+    }
+  });
+  function updateStick(touch){
+    const stick = document.getElementById('stick');
+    const rect = stick.getBoundingClientRect();
+    const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+    const dx = touch.clientX - cx, dy = touch.clientY - cy;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const max = rect.width * 0.35;
+    const ratio = Math.min(dist, max) / max;
+    const angle = Math.atan2(dy, dx);
+    stickPos.x = Math.cos(angle) * ratio;
+    stickPos.y = Math.sin(angle) * ratio;
+    const knob = document.querySelector('#stick i');
+    knob.style.transform = `translate(calc(-50% + ${stickPos.x*max}px), calc(-50% + ${stickPos.y*max}px))`;
+  }
+
+  function inputVector(){
+    let x = 0, y = 0;
+    if(keys.ArrowLeft || keys.a || keys.A) x -= 1;
+    if(keys.ArrowRight || keys.d || keys.D) x += 1;
+    if(keys.ArrowUp || keys.w || keys.W) y -= 1;
+    if(keys.ArrowDown || keys.s || keys.S) y += 1;
+    x += stickPos.x; y += stickPos.y;
+    if(state.invert > 0){ x = -x; y = -y; }
+    return { x, y };
+  }
+
+  // UI Panels
+  function showTitle(){
+    const fairOn = (state.mode === 'FAIRPLAY');
+    const cfg = modeCfg();
+    const fairBtn = fairOn ? 'btn' : 'btn ghost';
+    const mayBtn  = fairOn ? 'btn ghost' : 'btn';
+
+    document.getElementById('overlay').innerHTML = `
+      <div class="panel">
+        <h1>🐸 MURPHY'S LEAP</h1>
+        <p>
+          This arcade is a live demo of <b>Murphy’s Law</b>: the better you do, the harder the universe tries to ruin it.
+          <br><b>Win = clear the pellets.</b> Then it ramps up forever.
+        </p>
+
+        <div style="margin:12px 0 6px;font-weight:900;letter-spacing:.8px;color:var(--ice)">CHOOSE YOUR PATH</div>
+        <div class="row">
+          <button class="${fairBtn}" onclick="window.setMode('FAIRPLAY')">FAIRPLAY</button>
+          <button class="${mayBtn}" onclick="window.setMode('MAYHEM')">MAYHEM</button>
+        </div>
+
+        <div class="tiny" style="margin-top:10px;line-height:1.45">
+          <b style="color:var(--mint)">FAIRPLAY</b> = still intense — but fair, learnable, and sweaty. Clear warnings, steady Lore, skills stack.
+          <br><b style="color:var(--red)">MAYHEM</b> = pure chaos. Faster lanes, harsher Murphy events, fewer outs.
+        </div>
+
+        <div class="row" style="margin-top:14px">
+          <button class="btn" onclick="window.startGame()">START ${cfg.name}</button>
+        </div>
+
+        <p style="margin-top:12px;font-size:13px;color:var(--mint)">
+          💡 <kbd>SPACE</kbd> spends Lore to cancel a Murphy Event (cost is higher in MAYHEM).
+        </p>
+        <div class="tagline">VOTE MURPHY'S LORE · LETS GO!</div>
+        ${highScore > 0 ? `<div class="highscore">🏆 High Score: ${highScore}</div>` : ''}
+        <div class="tiny" style="margin-top:10px">Blue Snake Studios</div>
+      </div>`;
+  }
+
+  function showPause(){
+    state.screen = 'pause';
+    document.getElementById('overlay').innerHTML = `
+      <div class="panel">
+        <h1>⏸ PAUSED</h1>
+        <p>Murphy waits for no one. But you can catch your breath.</p>
+        <div class="tiny">Mode: <b style="color:var(--gold)">${modeCfg().name}</b> — ${modeCfg().tagline}</div>
+        <div class="row">
+          <button class="btn" onclick="window.resumeGame()">RESUME</button>
+          <button class="btn ghost" onclick="location.reload()">RESTART</button>
+        </div>
+      </div>`;
+  }
+
+  function showGameOver(){
+    state.screen = 'gameover'; saveHS();
+    const isNew = state.score >= highScore && state.score > 0;
+    document.getElementById('overlay').innerHTML = `
+      <div class="panel">
+        <h1>💀 MURPHY WINS</h1>
+        <p>Score: <b style="color:var(--gold);font-size:24px">${state.score}</b></p>
+        <div class=\"tiny\">Mode: <b style=\"color:var(--gold)\">${modeCfg().name}</b> — ${modeCfg().tagline}</div>
+        ${isNew ? '<p style="color:var(--mint);font-weight:900">🏆 NEW HIGH SCORE!</p>' : ''}
+        <div class="row"><button class="btn" onclick="location.reload()">TRY AGAIN</button></div>
+        <div class="murphy-banner show">What can go wrong, will go wrong. But you'll be back.</div>
+        ${highScore > 0 ? `<div class="highscore">🏆 Best: ${highScore}</div>` : ''}
+      </div>`;
+  }
+
+  function showLevelComplete(){
+    state.screen = 'levelcomplete';
+    document.getElementById('overlay').innerHTML = `
+      <div class="panel">
+        <h1>⭐ LEVEL ${state.level - 1} CLEAR!</h1>
+        <p>Score: <b style="color:var(--gold)">${state.score}</b></p>
+        <div class="lore-banner show">Murphy's Law bent. You didn't break.</div>
+        <div class="row" style="margin-top:16px">
+          <button class="btn" onclick="window.continueGame()">LEVEL ${state.level} →</button>
+        </div>
+      </div>`;
+  }
+
+  window.startGame = startGame;
+  window.resumeGame = resumeGame;
+  window.continueGame = continueGame;
+
+  function startGame(){
+    state.screen = 'play';
+    state.score = 0; state.lives = 3; state.level = 1; state.t = 0; state.lore = 0;
+    state.maxLore = modeCfg().maxLore;
+    then = 0; murphyTimer = 0;
+    document.getElementById('overlay').innerHTML = '';
+    initLevel(); updateHUD();
+    requestAnimationFrame(loop);
+  }
+
+  function resumeGame(){
+    state.screen = 'play'; then = 0;
+    document.getElementById('overlay').innerHTML = '';
+    requestAnimationFrame(loop);
+  }
+
+  function continueGame(){
+    state.screen = 'play'; then = 0;
+    document.getElementById('overlay').innerHTML = '';
+    initLevel(); updateHUD();
+    requestAnimationFrame(loop);
+  }
+
+  function initLevel(){
+    state.invert = 0; state.blackout = 0; state.slip = 0; state.trafficSlow = 0;
+    state.shield = 0; state.freeze = 0; state.speed = 0;
+
+    const cfg = modeCfg();
+    state.maxLore = cfg.maxLore;
+    // FAIRPLAY starts sweaty; MAYHEM starts savage.
+    state.shield = cfg.respawnShield;
+
+    player.col = Math.floor(WORLD.cols/2);
+    player.row = WORLD.rows - 1;
+    player.lastMove = -1;
+
+    ghost.col = Math.floor(WORLD.cols/2);
+    ghost.row = 0;
+    ghost.mood = cfg.ghostMoodBase + state.level * cfg.ghostMoodPerLevel;
+    ghost.lastMove = -1;
+
+    lanes.length = 0;
+    const baseSpeed = (0.8 + state.level * 0.25) * cfg.trafficMul;
+    for(let r = 2; r < WORLD.rows - 1; r++){
+      if(r === Math.floor(WORLD.rows/2)) continue; // safe row
+      const dir = Math.random() < 0.5 ? 1 : -1;
+      const cars = [];
+      const count = 2 + Math.floor(Math.random() * (1 + Math.floor(state.level/3)));
+      for(let i = 0; i < count; i++){
+        cars.push({
+          x: Math.random() * canvas.width,
+          speed: baseSpeed * (0.6 + Math.random() * 0.5) * dir,
+          w: WORLD.tile * (1.8 + Math.random() * 0.6),
+          h: WORLD.tile * 0.6,
+          hue: Math.random() * 360
+        });
+      }
+      lanes.push({ row: r, cars, flipped: false });
+    }
+
+    pellets.length = 0;
+    const safeRows = [1, Math.floor(WORLD.rows/2), 0];
+    for(const r of safeRows){
+      for(let c = 0; c < WORLD.cols; c++){
+        if(Math.random() < 0.75) pellets.push({ c, r });
+      }
+    }
+    state.totalPellets = pellets.length;
+    state.collected = 0;
+
+    loreOrbs.length = 0;
+    const loreCount = cfg.loreCountBase + Math.floor(state.level / cfg.loreCountDiv);
+    for(let i = 0; i < loreCount; i++){
+      const r = safeRows[Math.floor(Math.random() * 2)]; // rows 1 or middle
+      const c = Math.floor(Math.random() * WORLD.cols);
+      loreOrbs.push({ c, r });
+    }
+
+    walls.length = 0;
+    particles.length = 0;
+  }
+
+  function updateHUD(){
+    document.getElementById('score').textContent = state.score;
+    document.getElementById('level').textContent = state.level;
+    document.getElementById('lives').textContent = state.lives;
+    document.getElementById('mode').textContent = modeCfg().name;
+    document.querySelector('#meter i').style.width = `${(state.collected / state.totalPellets) * 100}%`;
+    document.querySelector('#loreBar i').style.width = `${(state.lore / state.maxLore) * 100}%`;
+  }
+
+  // Main loop
+  let then = 0, murphyTimer = 0;
+  function loop(now){
+    if(state.screen !== 'play') return;
+    if(then === 0) then = now;
+    const dt = Math.min((now - then) / 1000, 0.1);
+    then = now;
+    state.t += dt;
+
+    // Decay effects
+    if(state.invert > 0) state.invert -= dt;
+    if(state.blackout > 0) state.blackout -= dt;
+    if(state.slip > 0) state.slip -= dt;
+    if(state.trafficSlow > 0) state.trafficSlow -= dt;
+    if(state.shield > 0) state.shield -= dt;
+    if(state.freeze > 0) state.freeze -= dt;
+    if(state.speed > 0) state.speed -= dt;
+
+    updatePlayer(dt);
+    updateCars(dt);
+    updateGhost(dt);
+    checkCollisions();
+    updateParticles();
+
+    // Murphy events (Murphy's Law: the better you do, the more it tries to sabotage you)
+    const cfg = modeCfg();
+    murphyTimer += dt;
+    if(murphyTimer > cfg.murphyInterval && state.t > 3){
+      murphyTimer = 0;
+      const chance = cfg.murphyChanceBase + state.level * cfg.murphyChancePerLevel;
+      if(Math.random() < chance) triggerMurphy();
+    }
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function updatePlayer(dt){
+    const v = inputVector();
+    if(Math.abs(v.x) < 0.25 && Math.abs(v.y) < 0.25) return;
+
+    // Base move delay: 0.07s (fast!), slip makes it 0.18s, speed makes it 0.05s
+    let moveDelay = 0.07;
+    if(state.slip > 0) moveDelay = 0.18;
+    if(state.speed > 0) moveDelay = 0.05;
+    if(state.t - player.lastMove < moveDelay) return;
+
+    let dx = 0, dy = 0;
+    if(Math.abs(v.x) > Math.abs(v.y)) dx = v.x > 0 ? 1 : -1;
+    else dy = v.y > 0 ? 1 : -1;
+
+    const nc = player.col + dx, nr = player.row + dy;
+    if(!isWall(nc, nr)){
+      player.col = nc; player.row = nr;
+      player.lastMove = state.t;
+      SFX.hop();
+    }
+  }
+
+  function updateCars(dt){
+    // Traffic speed: normal 1x, trafficSlow 0.35x, freeze 0.1x
+    let speedMult = 1;
+    if(state.freeze > 0) speedMult = 0.1;
+    else if(state.trafficSlow > 0) speedMult = 0.35;
+
+    for(const lane of lanes){
+      for(const car of lane.cars){
+        car.x += car.speed * speedMult * WORLD.tile;
+        if(car.speed > 0 && car.x > canvas.width + car.w) car.x = -car.w;
+        if(car.speed < 0 && car.x < -car.w) car.x = canvas.width + car.w;
+      }
+    }
+  }
+
+  function updateGhost(dt){
+    const cfg = modeCfg();
+    if(state.t - ghost.lastMove < cfg.ghostMoveDelay) return;
+
+    const choices = [];
+    const dirs = [{dc:-1,dr:0},{dc:1,dr:0},{dc:0,dr:-1},{dc:0,dr:1}];
+    
+    // Prefer directions toward player based on mood
+    for(const d of dirs){
+      if(isWall(ghost.col + d.dc, ghost.row + d.dr)) continue;
+      const towardPlayer = 
+        (d.dc < 0 && player.col < ghost.col) ||
+        (d.dc > 0 && player.col > ghost.col) ||
+        (d.dr < 0 && player.row < ghost.row) ||
+        (d.dr > 0 && player.row > ghost.row);
+      // Add multiple times if moving toward player (weighted by mood)
+      const weight = towardPlayer ? Math.ceil(ghost.mood * 3) : 1;
+      for(let i = 0; i < weight; i++) choices.push(d);
+    }
+
+    if(choices.length > 0){
+      const move = choices[Math.floor(Math.random() * choices.length)];
+      ghost.col += move.dc; ghost.row += move.dr;
+      ghost.lastMove = state.t;
+    }
+  }
+
+  function checkCollisions(){
+    const t = WORLD.tile;
+    const px = player.col * t, py = player.row * t;
+
+    // Car collision
+    for(const lane of lanes){
+      if(lane.row !== player.row) continue;
+      for(const car of lane.cars){
+        const carY = lane.row * t;
+        if(px < car.x + car.w - t*0.2 && px + t > car.x + t*0.2 &&
+           py < carY + car.h && py + t > carY){
+          if(state.shield > 0){
+            state.shield = 0; SFX.shield();
+            spawnParticles(px + t/2, py + t/2, 'rgba(6,255,165,0.9)', 10);
+          } else {
+            killPlayer();
+            return;
+          }
+        }
+      }
+    }
+
+    // Ghost collision
+    if(ghost.col === player.col && ghost.row === player.row){
+      if(state.shield > 0){
+        state.shield = 0; SFX.shield();
+        spawnParticles(px + t/2, py + t/2, 'rgba(6,255,165,0.9)', 10);
+      } else {
+        killPlayer();
+        return;
+      }
+    }
+
+    // Pellet collection
+    for(let i = pellets.length - 1; i >= 0; i--){
+      const p = pellets[i];
+      if(p.c === player.col && p.r === player.row){
+        state.score += 10 + state.level * 2;
+        state.collected++;
+        spawnParticles(p.c * t + t/2, p.r * t + t/2, 'rgba(255,215,0,0.9)', 5);
+        pellets.splice(i, 1);
+        SFX.pellet();
+        updateHUD();
+        if(state.collected >= state.totalPellets) levelComplete();
+      }
+    }
+
+    // Lore orb collection
+    for(let i = loreOrbs.length - 1; i >= 0; i--){
+      const o = loreOrbs[i];
+      if(o.c === player.col && o.r === player.row){
+        state.score += 25;
+        if(state.lore < state.maxLore) state.lore++;
+        spawnParticles(o.c * t + t/2, o.r * t + t/2, 'rgba(6,255,165,0.9)', 8);
+        loreOrbs.splice(i, 1);
+        applyLoreBonus();
+        SFX.lore();
+        updateHUD();
+      }
+    }
+
+    // Wall decay
+    for(let i = walls.length - 1; i >= 0; i--){
+      walls[i].temp -= 0.016;
+      if(walls[i].temp <= 0) walls.splice(i, 1);
+    }
+  }
+
+  function killPlayer(){
+    state.lives--;
+    SFX.death();
+    const t = WORLD.tile;
+    spawnParticles(player.col * t + t/2, player.row * t + t/2, 'rgba(255,68,68,0.9)', 12);
+    updateHUD();
+
+    if(state.lives <= 0){
+      setTimeout(showGameOver, 400);
+    } else {
+      player.col = Math.floor(WORLD.cols/2);
+      player.row = WORLD.rows - 1;
+      state.shield = modeCfg().respawnShield;
+      popup('Respawning...', 'lore');
+    }
+  }
+
+  function levelComplete(){
+    state.level++;
+    state.score += 100 * state.level;
+    SFX.levelUp();
+    for(let i = 0; i < 15; i++){
+      setTimeout(() => spawnParticles(Math.random() * canvas.width, Math.random() * canvas.height, `hsl(${Math.random()*60+30}, 100%, 60%)`, 4), i * 40);
+    }
+    setTimeout(showLevelComplete, 600);
+  }
+
+  function applyLoreBonus(){
+    const cfg = modeCfg();
+    const bonusMult = (cfg.name === 'MAYHEM') ? 0.85 : 1.15;
+    const bonuses = ['shield', 'trafficSlow', 'freeze', 'speed'];
+    const bonus = bonuses[Math.floor(Math.random() * bonuses.length)];
+    
+    if(bonus === 'shield'){ state.shield = 5 * bonusMult; popup('🛡️ Shield!', 'lore'); }
+    else if(bonus === 'trafficSlow'){ state.trafficSlow = 4 * bonusMult; popup('🐢 Traffic Slowed!', 'lore'); }
+    else if(bonus === 'freeze'){ state.freeze = 3 * bonusMult; popup('❄️ Traffic Freeze!', 'lore'); }
+    else if(bonus === 'speed'){ state.speed = 4 * bonusMult; popup('⚡ Speed Boost!', 'lore'); }
+  }
+
+  function useLore(){
+    const cfg = modeCfg();
+    const cost = cfg.loreCancelCost;
+    const hasMurphy = (state.invert > 0 || state.blackout > 0 || state.slip > 0 || walls.length > 0);
+    if(state.lore < cost) return;
+    if(!hasMurphy) return;
+
+    state.lore -= cost;
+    state.invert = 0; state.blackout = 0; state.slip = 0;
+    if(cfg.loreRemovesWalls) walls.length = 0;
+    SFX.cancel();
+    popup(`✨ Murphy Cancelled! (-${cost} Lore)`, 'lore');
+    updateHUD();
+  }
+
+  // Murphy Events
+  const MURPHY_EVENTS = [
+    { name: 'INVERT', fn: () => { state.invert = 3.5 * modeCfg().murphyDurMul; popup('⚠️ INVERTED!', 'murphy'); }},
+    { name: 'BLACKOUT', fn: () => { state.blackout = 2.5 * modeCfg().murphyDurMul; popup('🌑 BLACKOUT!', 'murphy'); }},
+    { name: 'SLIP', fn: () => { state.slip = 3.5 * modeCfg().murphyDurMul; popup('🧊 SLIPPERY!', 'murphy'); }},
+    { name: 'WALL', fn: () => {
+      const c = Math.floor(Math.random() * WORLD.cols);
+      const r = 2 + Math.floor(Math.random() * (WORLD.rows - 4));
+      if(!(r === player.row && c === player.col)){
+        walls.push({ c, r, temp: 4 * modeCfg().wallDurMul });
+        popup('🧱 WALL!', 'murphy');
+      }
+    }},
+    { name: 'LANE_FLIP', fn: () => {
+      if(lanes.length > 0){
+        const lane = lanes[Math.floor(Math.random() * lanes.length)];
+        for(const car of lane.cars) car.speed = -car.speed;
+        lane.flipped = !lane.flipped;
+        popup('🔄 LANE FLIP!', 'murphy');
+      }
+    }},
+    { name: 'GHOST_RAGE', fn: () => {
+      ghost.mood = Math.min(1, ghost.mood + modeCfg().ghostRageBoost);
+      popup('👻 GHOST RAGE!', 'murphy');
+    }}
+  ];
+
+  function triggerMurphy(){
+    const event = MURPHY_EVENTS[Math.floor(Math.random() * MURPHY_EVENTS.length)];
+    event.fn();
+    SFX.murphy();
+  }
+
+  // Drawing
+  function draw(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Blackout mode
+    if(state.blackout > 0){
+      ctx.fillStyle = 'rgba(0,0,0,0.92)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawPlayer(player.col, player.row);
+      drawParticles();
+      return;
+    }
+
+    // Background
+    ctx.save();
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, 'rgba(7,11,34,0.35)');
+    grad.addColorStop(1, 'rgba(7,11,34,0.45)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+
+    // Safe zones highlight
+    const t = WORLD.tile;
+    ctx.fillStyle = 'rgba(157,180,255,0.06)';
+    ctx.fillRect(0, 0, canvas.width, t);
+    ctx.fillRect(0, t, canvas.width, t);
+    ctx.fillRect(0, Math.floor(WORLD.rows/2) * t, canvas.width, t);
+    ctx.fillRect(0, (WORLD.rows-1) * t, canvas.width, t);
+
+    // Goal banner
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,215,0,0.12)';
+    ctx.fillRect(0, 0, canvas.width, t);
+    ctx.font = `900 ${Math.max(12, t*0.4)}px system-ui`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(255,215,0,0.85)';
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = 'rgba(255,215,0,0.3)';
+    ctx.fillText('CROSS INTO LEGEND', canvas.width/2, t*0.5);
+    ctx.restore();
+
+    // Lane marks
+    for(const lane of lanes) drawLaneMark(lane.row, lane.flipped);
+
+    // Pellets & Lore
+    for(const p of pellets) drawPellet(p.c, p.r);
+    for(const o of loreOrbs) drawLoreOrb(o.c, o.r);
+
+    // Walls
+    for(const w of walls) drawWall(w.c, w.r);
+
+    // Cars
+    for(const lane of lanes){
+      for(const car of lane.cars) drawCar(car, lane.row, lane.flipped);
+    }
+
+    // Ghost
+    drawGhost(ghost.col, ghost.row);
+
+    // Player
+    drawPlayer(player.col, player.row);
+
+    // Particles
+    drawParticles();
+
+    // Status tags
+    drawStatusTags();
+
+    // Vignette
+    vignette(0.65);
+  }
+
+  function drawLaneMark(r, flipped){
+    const t = WORLD.tile;
+    const y = r * t + t * 0.5;
+    ctx.save();
+    ctx.globalAlpha = 0.12;
+    ctx.strokeStyle = flipped ? 'rgba(255,68,68,0.7)' : 'rgba(157,180,255,0.6)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 10]);
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  function drawCar(car, row, flipped){
+    const t = WORLD.tile;
+    const y = row * t + (t - car.h) / 2;
+    ctx.save();
+    const grad = ctx.createLinearGradient(car.x, y, car.x + car.w, y);
+    const a = flipped ? 0.2 : 0.12;
+    grad.addColorStop(0, `hsla(${car.hue}, 85%, 58%, ${0.55+a})`);
+    grad.addColorStop(1, `hsla(${(car.hue+35)%360}, 85%, 52%, ${0.35+a})`);
+    ctx.fillStyle = grad;
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = flipped ? 'rgba(255,68,68,0.15)' : 'rgba(255,215,0,0.12)';
+    roundRect(car.x, y, car.w, car.h, 8, true, false);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    roundRect(car.x + car.w*0.12, y + car.h*0.15, car.w*0.25, car.h*0.3, 4, true, false);
+    roundRect(car.x + car.w*0.55, y + car.h*0.15, car.w*0.25, car.h*0.3, 4, true, false);
+    ctx.restore();
+  }
+
+  function drawPellet(c, r){
+    const t = WORLD.tile;
+    const x = c * t + t * 0.5, y = r * t + t * 0.5;
+    const pulse = 0.7 + 0.3 * Math.sin(state.t * 5 + c + r);
+    ctx.save();
+    ctx.fillStyle = `rgba(255,215,0,${0.4 + 0.3*pulse})`;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = 'rgba(255,215,0,0.25)';
+    ctx.beginPath();
+    ctx.arc(x, y, t * 0.1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawLoreOrb(c, r){
+    const t = WORLD.tile;
+    const x = c * t + t * 0.5, y = r * t + t * 0.5;
+    const pulse = 0.6 + 0.4 * Math.sin(state.t * 4 + c * 0.5);
+    ctx.save();
+    ctx.fillStyle = `rgba(6,255,165,${0.4 + 0.35*pulse})`;
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = 'rgba(6,255,165,0.25)';
+    for(let i = 0; i < 7; i++){
+      const a = (Math.PI * 2 / 7) * i + state.t * 0.4;
+      ctx.beginPath();
+      ctx.arc(x + Math.cos(a) * t * 0.14, y + Math.sin(a) * t * 0.14, t * 0.04, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, t * 0.11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawWall(c, r){
+    const t = WORLD.tile;
+    const x = c * t, y = r * t;
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,215,0,0.45)';
+    ctx.strokeStyle = 'rgba(255,68,68,0.5)';
+    ctx.lineWidth = 2;
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = 'rgba(255,68,68,0.15)';
+    roundRect(x + 2, y + 2, t - 4, t - 4, 8, true, true);
+    ctx.restore();
+  }
+
+  function drawPlayer(c, r){
+    const t = WORLD.tile;
+    const x = c * t + t * 0.5, y = r * t + t * 0.5;
+    ctx.save();
+
+    // Shield ring
+    if(state.shield > 0){
+      const sp = 0.5 + 0.5 * Math.sin(state.t * 10);
+      ctx.strokeStyle = `rgba(6,255,165,${0.5*sp})`;
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = 'rgba(6,255,165,0.35)';
+      ctx.beginPath();
+      ctx.arc(x, y, t * 0.38, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Body
+    const pulse = 0.88 + 0.12 * Math.sin(state.t * 7);
+    ctx.fillStyle = `rgba(255,215,0,${0.88*pulse})`;
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = 'rgba(255,215,0,0.35)';
+    ctx.beginPath();
+    ctx.arc(x, y, t * 0.26, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Mouth (pac style)
+    const v = inputVector();
+    let ang = Math.atan2(v.y, v.x);
+    if(Math.abs(v.x) + Math.abs(v.y) < 0.1) ang = -Math.PI / 2;
+    const open = 0.3 + 0.2 * Math.sin(state.t * 10);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.arc(x, y, t * 0.28, ang - open, ang + open);
+    ctx.closePath();
+    ctx.fill();
+
+    // M glyph
+    ctx.strokeStyle = 'rgba(0,0,0,0.22)';
+    ctx.lineWidth = Math.max(1.5, t * 0.06);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    const s = t * 0.14;
+    ctx.beginPath();
+    ctx.moveTo(x - s, y + s * 0.5);
+    ctx.lineTo(x - s, y - s * 0.5);
+    ctx.lineTo(x, y + s * 0.1);
+    ctx.lineTo(x + s, y - s * 0.5);
+    ctx.lineTo(x + s, y + s * 0.5);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawGhost(c, r){
+    const t = WORLD.tile;
+    const x = c * t + t * 0.5, y = r * t + t * 0.5;
+    const glow = 0.12 + ghost.mood * 0.2;
+    ctx.save();
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = `rgba(255,68,68,${glow})`;
+
+    const w = t * 0.52, h = t * 0.56;
+    const topY = y - h * 0.28;
+    ctx.fillStyle = `rgba(255,68,68,${0.5 + ghost.mood*0.2})`;
+    roundRect(x - w/2, topY, w, h, 14, true, false);
+
+    ctx.shadowBlur = 0;
+    for(let i = 0; i < 4; i++){
+      const sx = x - w/2 + (i + 0.5) * (w/4);
+      ctx.beginPath();
+      ctx.arc(sx, topY + h, w/12, 0, Math.PI, true);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath();
+    ctx.arc(x - w*0.16, y - h*0.04, w*0.09, 0, Math.PI*2);
+    ctx.arc(x + w*0.16, y - h*0.04, w*0.09, 0, Math.PI*2);
+    ctx.fill();
+
+    const dx = clamp(player.col - ghost.col, -1, 1) * w * 0.03;
+    const dy = clamp(player.row - ghost.row, -1, 1) * w * 0.03;
+    ctx.fillStyle = 'rgba(255,215,0,0.8)';
+    ctx.beginPath();
+    ctx.arc(x - w*0.16 + dx, y - h*0.04 + dy, w*0.04, 0, Math.PI*2);
+    ctx.arc(x + w*0.16 + dx, y - h*0.04 + dy, w*0.04, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawStatusTags(){
+    const t = WORLD.tile;
+    const tags = [];
+    if(state.invert > 0) tags.push({ label: 'INVERT', color: 'rgba(255,68,68,0.85)' });
+    if(state.slip > 0) tags.push({ label: 'SLIP', color: 'rgba(255,68,68,0.85)' });
+    if(state.shield > 0) tags.push({ label: 'SHIELD', color: 'rgba(6,255,165,0.85)' });
+    if(state.trafficSlow > 0) tags.push({ label: 'SLOW', color: 'rgba(6,255,165,0.85)' });
+    if(state.freeze > 0) tags.push({ label: 'FREEZE', color: 'rgba(157,180,255,0.85)' });
+    if(state.speed > 0) tags.push({ label: 'SPEED', color: 'rgba(255,215,0,0.85)' });
+    if(!tags.length) return;
+
+    ctx.save();
+    ctx.font = `900 ${Math.max(9, t*0.2)}px system-ui`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    const y0 = canvas.height - t * 0.5;
+    let x0 = 10;
+    for(const tag of tags){
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      roundRect(x0 - 4, y0 - 8, t * 1.8, 16, 8, true, false);
+      ctx.strokeStyle = tag.color;
+      ctx.lineWidth = 1.5;
+      roundRect(x0 - 4, y0 - 8, t * 1.8, 16, 8, false, true);
+      ctx.fillStyle = tag.color;
+      ctx.fillText(tag.label, x0, y0);
+      x0 += t * 2;
+    }
+    ctx.restore();
+  }
+
+  function vignette(strength = 0.7){
+    ctx.save();
+    const g = ctx.createRadialGradient(canvas.width/2, canvas.height/2, canvas.width*0.1, canvas.width/2, canvas.height/2, canvas.width*0.6);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(1, `rgba(0,0,0,${strength})`);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
+
+  function roundRect(x, y, w, h, r, fill, stroke){
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+    if(fill) ctx.fill();
+    if(stroke) ctx.stroke();
+  }
+
+  function isWall(c, r){
+    if(c < 0 || c >= WORLD.cols || r < 0 || r >= WORLD.rows) return true;
+    if(r === 0 || r === WORLD.rows - 1) return false;
+    if(r === 1 || r === Math.floor(WORLD.rows/2)) return false;
+    for(const w of walls){
+      if(w.c === c && w.r === r) return true;
+    }
+    return false;
+  }
+
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  function resize(){
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    WORLD.tile = Math.min(canvas.width / WORLD.cols, canvas.height / WORLD.rows);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  showTitle();
+  updateHUD();
+})();
+</script>
+</body>
+</html>
