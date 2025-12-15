@@ -1,21 +1,111 @@
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    initQRCode();
+    initQRCodes();
+    initPlatformDetection();
     initCounters();
     initParallax();
     initSmoothScroll();
 });
 
-// Generate QR Code
-function initQRCode() {
-    const qrcode = new QRCode(document.getElementById("qrcode"), {
-        text: "https://github.com/Blackcockatoo/murphys-lore-",
-        width: 200,
-        height: 200,
-        colorDark: "#6366f1",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
+// Generate Multiple QR Codes
+function initQRCodes() {
+    const repoURL = "https://github.com/Blackcockatoo/murphys-lore-";
+
+    // QR Code for iOS/Mac
+    if (document.getElementById("qrcode-apple")) {
+        new QRCode(document.getElementById("qrcode-apple"), {
+            text: repoURL,
+            width: 180,
+            height: 180,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
+    // QR Code for Android/Windows
+    if (document.getElementById("qrcode-android")) {
+        new QRCode(document.getElementById("qrcode-android"), {
+            text: repoURL,
+            width: 180,
+            height: 180,
+            colorDark: "#3ddc84",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
+    // QR Code for GitHub (Universal)
+    if (document.getElementById("qrcode-github")) {
+        new QRCode(document.getElementById("qrcode-github"), {
+            text: repoURL,
+            width: 200,
+            height: 200,
+            colorDark: "#6366f1",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+}
+
+// Platform Detection
+function initPlatformDetection() {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    let detectedPlatform = '';
+    let platformCard = null;
+
+    // Detect iOS/Mac
+    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        detectedPlatform = 'iOS 📱';
+        platformCard = document.getElementById('apple-card');
+    } else if (/Mac/.test(userAgent)) {
+        detectedPlatform = 'macOS 💻';
+        platformCard = document.getElementById('apple-card');
+    }
+    // Detect Android
+    else if (/android/i.test(userAgent)) {
+        detectedPlatform = 'Android 📱';
+        platformCard = document.getElementById('windows-card');
+    }
+    // Detect Windows
+    else if (/Win/.test(userAgent)) {
+        detectedPlatform = 'Windows 🖥️';
+        platformCard = document.getElementById('windows-card');
+    }
+    // Detect Linux
+    else if (/Linux/.test(userAgent)) {
+        detectedPlatform = 'Linux 🐧';
+        platformCard = document.getElementById('windows-card');
+    }
+
+    // Highlight detected platform
+    if (platformCard) {
+        platformCard.classList.add('detected');
+
+        // Show notification
+        const notification = document.getElementById('platformDetected');
+        const platformSpan = document.getElementById('detectedPlatform');
+
+        if (platformSpan && notification) {
+            platformSpan.textContent = detectedPlatform;
+            notification.classList.add('show');
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Scroll to platform section on mobile
+        if (window.innerWidth <= 768) {
+            setTimeout(() => {
+                platformCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
+        }
+    }
+
+    // Log platform info for debugging
+    console.log(`🎯 Platform detected: ${detectedPlatform || 'Unknown'}`);
 }
 
 // Animated Counter

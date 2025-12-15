@@ -14,6 +14,10 @@
         <div class="gradient-orb orb-1"></div>
         <div class="gradient-orb orb-2"></div>
         <div class="gradient-orb orb-3"></div>
+        <!-- Subtle B$S Branding Glyphs -->
+        <div class="brand-glyph glyph-1" data-text="M">M</div>
+        <div class="brand-glyph glyph-2" data-text="B$S">B$S</div>
+        <div class="brand-glyph glyph-3" data-text="M">M</div>
     </div>
 
     <!-- Main Container -->
@@ -22,10 +26,12 @@
         <header class="hero">
             <div class="logo-container">
                 <div class="logo-glow"></div>
-                <h1 class="glitch" data-text="MURPHY'S">MURPHY'S</h1>
+                <h1 class="glitch" data-text="MURPHY'S"><span class="special-m">M</span>URPHY'S</h1>
                 <h2 class="neon-text">LORE</h2>
+                <div class="brand-tag">est. 2025 | B$S</div>
             </div>
             <p class="tagline">Where Legends Begin 🚀</p>
+            <div class="contact-subtle">votemurphyslore</div>
             <div class="pulse-ring"></div>
         </header>
 
@@ -33,55 +39,135 @@
         <section class="features">
             <div class="card glass-card">
                 <div class="card-icon">📱</div>
-                <h3>Mobile Optimized</h3>
+                <h3><span class="brand-accent">M</span>obile Optimized</h3>
                 <p>Slick experience on any device</p>
+                <div class="card-watermark">B$S</div>
             </div>
 
             <div class="card glass-card">
                 <div class="card-icon">⚡</div>
                 <h3>Lightning Fast</h3>
-                <p>Built for speed & style</p>
+                <p>Built for speed & <span class="brand-accent">style</span></p>
+                <div class="card-watermark">M</div>
             </div>
 
             <div class="card glass-card">
                 <div class="card-icon">🎨</div>
                 <h3>Next Level Design</h3>
                 <p>Dripping in swag</p>
+                <div class="card-watermark">B$S</div>
             </div>
         </section>
 
-        <!-- QR Code Section -->
-        <section class="qr-section">
-            <h2 class="section-title">Get the Code 📲</h2>
-            <div class="qr-container glass-card">
-                <div id="qrcode"></div>
-                <p class="qr-label">Scan to access the repo</p>
-                <a href="https://github.com/Blackcockatoo/murphys-lore-" class="github-link" target="_blank">
-                    <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-                    </svg>
-                    View on GitHub
-                </a>
-            </div>
-        </section>
+        <!-- Platform Download Section -->
+        <section class="platform-section">
+            <h2 class="section-title">Choose Your Platform 🎮</h2>
+            <p class="platform-subtitle">Optimized for your device - Download & play offline</p>
 
-        <!-- Download Section -->
-        <section class="download-section">
-            <h2 class="section-title">Level Up 🎯</h2>
-            <div class="download-grid">
-                <button class="download-btn primary-btn" onclick="window.open('https://github.com/Blackcockatoo/murphys-lore-/archive/refs/heads/main.zip', '_blank')">
-                    <span class="btn-icon">⬇️</span>
-                    <span class="btn-text">Download ZIP</span>
-                    <span class="btn-shimmer"></span>
-                </button>
+            <div class="platform-grid">
+                <!-- iOS/Mac Platform -->
+                <div class="platform-card glass-card" id="apple-card">
+                    <div class="platform-badge">
+                        <span class="badge-icon">🍎</span>
+                        <span class="badge-text">Apple</span>
+                    </div>
+                    <h3 class="platform-title">iPhone / Mac</h3>
+                    <p class="platform-desc">Optimized for iOS & macOS</p>
 
-                <button class="download-btn secondary-btn" onclick="copyToClipboard('git clone https://github.com/Blackcockatoo/murphys-lore-.git')">
-                    <span class="btn-icon">📋</span>
-                    <span class="btn-text">Copy Git Clone</span>
-                    <span class="btn-shimmer"></span>
-                </button>
+                    <div class="qr-code-container">
+                        <div id="qrcode-apple"></div>
+                        <p class="qr-caption">Scan with iPhone Camera</p>
+                    </div>
+
+                    <div class="platform-buttons">
+                        <button class="platform-btn apple-btn" onclick="window.open('https://github.com/Blackcockatoo/murphys-lore-/archive/refs/heads/main.zip', '_blank')">
+                            <span class="btn-icon">📱</span>
+                            <span class="btn-text">Download for iOS</span>
+                            <span class="btn-shimmer"></span>
+                        </button>
+                        <button class="platform-btn apple-btn-alt" onclick="window.open('https://github.com/Blackcockatoo/murphys-lore-/archive/refs/heads/main.zip', '_blank')">
+                            <span class="btn-icon">💻</span>
+                            <span class="btn-text">Download for Mac</span>
+                            <span class="btn-shimmer"></span>
+                        </button>
+                    </div>
+
+                    <div class="platform-features">
+                        <div class="feature-item">✓ Touch optimized</div>
+                        <div class="feature-item">✓ Offline capable</div>
+                        <div class="feature-item">✓ Add to Home Screen</div>
+                    </div>
+                </div>
+
+                <!-- Windows/Android Platform -->
+                <div class="platform-card glass-card" id="windows-card">
+                    <div class="platform-badge android-badge">
+                        <span class="badge-icon">🤖</span>
+                        <span class="badge-text">Android/Windows</span>
+                    </div>
+                    <h3 class="platform-title">Android / Windows</h3>
+                    <p class="platform-desc">Optimized for Android & PC</p>
+
+                    <div class="qr-code-container">
+                        <div id="qrcode-android"></div>
+                        <p class="qr-caption">Scan with Android Camera</p>
+                    </div>
+
+                    <div class="platform-buttons">
+                        <button class="platform-btn android-btn" onclick="window.open('https://github.com/Blackcockatoo/murphys-lore-/archive/refs/heads/main.zip', '_blank')">
+                            <span class="btn-icon">📱</span>
+                            <span class="btn-text">Download for Android</span>
+                            <span class="btn-shimmer"></span>
+                        </button>
+                        <button class="platform-btn android-btn-alt" onclick="window.open('https://github.com/Blackcockatoo/murphys-lore-/archive/refs/heads/main.zip', '_blank')">
+                            <span class="btn-icon">🖥️</span>
+                            <span class="btn-text">Download for Windows</span>
+                            <span class="btn-shimmer"></span>
+                        </button>
+                    </div>
+
+                    <div class="platform-features">
+                        <div class="feature-item">✓ Full screen mode</div>
+                        <div class="feature-item">✓ Offline capable</div>
+                        <div class="feature-item">✓ Desktop support</div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Universal Options -->
+            <div class="universal-section">
+                <h3 class="universal-title">Universal Access 🌐</h3>
+                <div class="universal-grid">
+                    <div class="universal-card glass-card">
+                        <div id="qrcode-github"></div>
+                        <p class="qr-label">GitHub Repo</p>
+                        <a href="https://github.com/Blackcockatoo/murphys-lore-" class="github-link" target="_blank">
+                            <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                            </svg>
+                            View Source Code
+                        </a>
+                    </div>
+
+                    <div class="download-options">
+                        <button class="download-btn primary-btn" onclick="copyToClipboard('git clone https://github.com/Blackcockatoo/murphys-lore-.git')">
+                            <span class="btn-icon">📋</span>
+                            <span class="btn-text">Copy Git Clone</span>
+                            <span class="btn-shimmer"></span>
+                        </button>
+                        <button class="download-btn secondary-btn" onclick="window.open('https://github.com/Blackcockatoo/murphys-lore-/archive/refs/heads/main.zip', '_blank')">
+                            <span class="btn-icon">⬇️</span>
+                            <span class="btn-text">Download ZIP</span>
+                            <span class="btn-shimmer"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div id="copyNotification" class="copy-notification">Copied to clipboard! 🔥</div>
+            <div id="platformDetected" class="platform-notification">
+                Detected: <span id="detectedPlatform"></span> - Your platform is highlighted!
+            </div>
         </section>
 
         <!-- Stats Section -->
@@ -89,21 +175,46 @@
             <div class="stat glass-card">
                 <div class="stat-value" data-target="100">0</div>
                 <div class="stat-label">% Swag</div>
+                <div class="stat-watermark">B$S</div>
             </div>
             <div class="stat glass-card">
                 <div class="stat-value" data-target="2025">0</div>
                 <div class="stat-label">Level</div>
+                <div class="stat-watermark">M</div>
             </div>
             <div class="stat glass-card">
                 <div class="stat-value" data-target="999">0</div>
                 <div class="stat-label">Vibes</div>
+                <div class="stat-watermark">B$S</div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact-section">
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <a href="mailto:themossman@bluesnakestudios.com.au" class="contact-link">
+                        the<span class="brand-accent">m</span>ossman@bluesnakestudios.com.au
+                    </a>
+                    <div class="contact-label">Drop a line to the Moss<span class="brand-accent">M</span>an</div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">🗳️</div>
+                    <div class="contact-link-static">votemurphyslore</div>
+                    <div class="contact-label">Make it official | <span class="brand-accent">B$S</span> approved</div>
+                </div>
             </div>
         </section>
 
         <!-- Footer -->
         <footer class="footer">
-            <p>Built with 💎 for Murphy</p>
-            <p class="footer-subtext">Campaign 2025 | No Cap</p>
+            <div class="footer-brand">
+                <span class="footer-m">M</span>urphy's Lore
+            </div>
+            <p>Built with 💎 for Murphy by the <span class="brand-accent">M</span>oss<span class="brand-accent">M</span>an</p>
+            <p class="footer-subtext">Campaign 2025 | No Cap | <span class="brand-accent">B$S</span> Certified</p>
+            <div class="footer-watermark">B$S</div>
         </footer>
     </div>
 
