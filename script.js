@@ -1,3 +1,8 @@
+let murphyPlatformContext = {
+    detectedPlatform: 'Unknown',
+    userAgent: navigator.userAgent || ''
+};
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     initQRCodes();
@@ -5,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initCounters();
     initParallax();
     initSmoothScroll();
+    initDebugSuite();
 });
 
 // Generate Multiple QR Codes
@@ -78,6 +84,12 @@ function initPlatformDetection() {
         platformCard = document.getElementById('windows-card');
     }
 
+    murphyPlatformContext = {
+        detectedPlatform: detectedPlatform || 'Unknown',
+        userAgent,
+        timestamp: Date.now()
+    };
+
     // Highlight detected platform
     if (platformCard) {
         platformCard.classList.add('detected');
@@ -106,6 +118,104 @@ function initPlatformDetection() {
 
     // Log platform info for debugging
     console.log(`🎯 Platform detected: ${detectedPlatform || 'Unknown'}`);
+}
+
+// Debug Suite
+function initDebugSuite() {
+    const runButton = document.getElementById('runDiagnostics');
+    const copyButton = document.getElementById('copyDebugLog');
+
+    if (!runButton && !copyButton) return;
+
+    const runSweep = () => {
+        appendDebugLog('Launching Steelman sweep...');
+        renderDiagnostics(collectDiagnostics());
+    };
+
+    runSweep();
+
+    if (runButton) {
+        runButton.addEventListener('click', runSweep);
+    }
+
+    if (copyButton) {
+        copyButton.addEventListener('click', () => {
+            const log = document.getElementById('debugLog');
+            if (log) {
+                copyToClipboard(log.textContent);
+                appendDebugLog('Debug log copied to clipboard.');
+            }
+        });
+    }
+
+    window.addEventListener('online', runSweep);
+    window.addEventListener('offline', runSweep);
+    window.addEventListener('resize', runSweep);
+}
+
+function collectDiagnostics() {
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const bandwidth = connection?.downlink ? `${connection.downlink} Mbps` : 'Unknown';
+    const connectionType = connection?.effectiveType || connection?.type || 'Unavailable';
+    const onlineStatus = navigator.onLine ? 'Online ✅' : 'Offline ⚠️';
+    const viewport = `${window.innerWidth} x ${window.innerHeight}`;
+    const locale = navigator.language || (navigator.languages && navigator.languages[0]) || 'Unknown';
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown';
+    const memory = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'Unknown';
+    const ua = murphyPlatformContext.userAgent || navigator.userAgent || 'Unavailable';
+
+    return {
+        platform: murphyPlatformContext.detectedPlatform || 'Unknown',
+        onlineStatus,
+        connectionType,
+        bandwidth,
+        viewport,
+        locale,
+        timezone,
+        memory,
+        ua
+    };
+}
+
+function renderDiagnostics(data) {
+    const { platform, onlineStatus, connectionType, bandwidth, viewport, locale, timezone, memory, ua } = data;
+
+    updateElementText('debugPlatform', platform);
+    updateElementText('debugNetwork', onlineStatus);
+    updateElementText('debugConnection',
+        connectionType === 'Unavailable' && bandwidth === 'Unknown'
+            ? 'Connection API unavailable'
+            : `${connectionType} | ${bandwidth}`
+    );
+    updateElementText('debugViewport', viewport);
+    updateElementText('debugLocale', locale);
+    updateElementText('debugTimezone', timezone);
+    updateElementText('debugMemory', memory);
+
+    appendDebugLog(`Steelman sweep: ${platform} · ${onlineStatus} · ${connectionType} (${bandwidth})`);
+    appendDebugLog(`Vitals: ${viewport} | ${locale} | ${timezone} | Memory: ${memory}`);
+    appendDebugLog(`UA: ${ua.substring(0, 140)}${ua.length > 140 ? '…' : ''}`);
+}
+
+function appendDebugLog(message) {
+    const log = document.getElementById('debugLog');
+    if (!log) return;
+
+    const existing = log.textContent.trim() === 'Ready for diagnostics...'
+        ? []
+        : log.textContent.split('\n').filter(Boolean);
+
+    const timestamp = new Date().toLocaleTimeString();
+    existing.unshift(`[${timestamp}] ${message}`);
+
+    log.textContent = existing.slice(0, 12).join('\n');
+}
+
+function updateElementText(id, value) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.textContent = value;
+    }
 }
 
 // Animated Counter
