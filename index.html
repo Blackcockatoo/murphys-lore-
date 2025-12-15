@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Murphy's Lore - The Ultimate Campaign">
+    <meta name="theme-color" content="#6366f1">
+    <title>Murphy's Lore 🔥</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="logo-container">
+                <div class="logo-glow"></div>
+                <h1 class="glitch" data-text="MURPHY'S">MURPHY'S</h1>
+                <h2 class="neon-text">LORE</h2>
+            </div>
+            <p class="tagline">Where Legends Begin 🚀</p>
+            <div class="pulse-ring"></div>
+        </header>
+
+        <!-- Feature Cards -->
+        <section class="features">
+            <div class="card glass-card">
+                <div class="card-icon">📱</div>
+                <h3>Mobile Optimized</h3>
+                <p>Slick experience on any device</p>
+            </div>
+
+            <div class="card glass-card">
+                <div class="card-icon">⚡</div>
+                <h3>Lightning Fast</h3>
+                <p>Built for speed & style</p>
+            </div>
+
+            <div class="card glass-card">
+                <div class="card-icon">🎨</div>
+                <h3>Next Level Design</h3>
+                <p>Dripping in swag</p>
+            </div>
+        </section>
+
+        <!-- QR Code Section -->
+        <section class="qr-section">
+            <h2 class="section-title">Get the Code 📲</h2>
+            <div class="qr-container glass-card">
+                <div id="qrcode"></div>
+                <p class="qr-label">Scan to access the repo</p>
+                <a href="https://github.com/Blackcockatoo/murphys-lore-" class="github-link" target="_blank">
+                    <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                    View on GitHub
+                </a>
+            </div>
+        </section>
+
+        <!-- Download Section -->
+        <section class="download-section">
+            <h2 class="section-title">Level Up 🎯</h2>
+            <div class="download-grid">
+                <button class="download-btn primary-btn" onclick="window.open('https://github.com/Blackcockatoo/murphys-lore-/archive/refs/heads/main.zip', '_blank')">
+                    <span class="btn-icon">⬇️</span>
+                    <span class="btn-text">Download ZIP</span>
+                    <span class="btn-shimmer"></span>
+                </button>
+
+                <button class="download-btn secondary-btn" onclick="copyToClipboard('git clone https://github.com/Blackcockatoo/murphys-lore-.git')">
+                    <span class="btn-icon">📋</span>
+                    <span class="btn-text">Copy Git Clone</span>
+                    <span class="btn-shimmer"></span>
+                </button>
+            </div>
+            <div id="copyNotification" class="copy-notification">Copied to clipboard! 🔥</div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <div class="stat glass-card">
+                <div class="stat-value" data-target="100">0</div>
+                <div class="stat-label">% Swag</div>
+            </div>
+            <div class="stat glass-card">
+                <div class="stat-value" data-target="2025">0</div>
+                <div class="stat-label">Level</div>
+            </div>
+            <div class="stat glass-card">
+                <div class="stat-value" data-target="999">0</div>
+                <div class="stat-label">Vibes</div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built with 💎 for Murphy</p>
+            <p class="footer-subtext">Campaign 2025 | No Cap</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
