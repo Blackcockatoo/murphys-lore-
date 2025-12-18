@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍌 Monkey Invaders 🐵</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 60px rgba(255, 200, 0, 0.3),
+                0 0 100px rgba(255, 100, 0, 0.2),
+                inset 0 0 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        #gameCanvas {
+            display: block;
+            background: linear-gradient(180deg, #0d0d2b 0%, #1a1a3e 50%, #0d1a2d 100%);
+        }
+        
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+            pointer-events: none;
+        }
+        
+        .ui-item {
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 200, 0, 0.8);
+        }
+        
+        .score { color: #ffd700; }
+        .level { color: #00ff88; }
+        .lives { color: #ff6b6b; }
+        
+        #powerupDisplay {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            pointer-events: none;
+        }
+        
+        .powerup-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: rgba(0,0,0,0.6);
+            border: 2px solid;
+            opacity: 0.4;
+            transition: all 0.3s ease;
+        }
+        
+        .powerup-icon.active {
+            opacity: 1;
+            box-shadow: 0 0 20px currentColor;
+        }
+        
+        #startScreen, #gameOverScreen, #levelScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        
+        #levelScreen {
+            display: none;
+        }
+        
+        #gameOverScreen {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 48px;
+            color: #ffd700;
+            text-shadow: 
+                0 0 20px #ffa500,
+                0 0 40px #ff6600,
+                0 0 60px #ff3300;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            font-size: 32px;
+            color: #00ff88;
+            text-shadow: 0 0 20px #00ff88;
+            margin-bottom: 30px;
+        }
+        
+        .subtitle {
+            font-size: 20px;
+            color: #aaa;
+            margin-bottom: 40px;
+        }
+        
+        .btn {
+            padding: 15px 50px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #ff6b00 0%, #ff9500 100%);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 100, 0, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 100, 0, 0.6);
+        }
+        
+        .controls {
+            margin-top: 40px;
+            color: #888;
+            text-align: center;
+            line-height: 2;
+        }
+        
+        .controls span {
+            color: #ffd700;
+            background: rgba(255,215,0,0.2);
+            padding: 4px 12px;
+            border-radius: 6px;
+            margin: 0 5px;
+        }
+        
+        .emoji-title {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 1s ease infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .final-score {
+            font-size: 36px;
+            color: #ffd700;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div id="ui">
+            <div class="ui-item score">🍌 Score: <span id="scoreValue">0</span></div>
+            <div class="ui-item level">⭐ Level: <span id="levelValue">1</span></div>
+            <div class="ui-item lives">❤️ Lives: <span id="livesValue">3</span></div>
+        </div>
+        
+        <div id="powerupDisplay">
+            <div class="powerup-icon" id="pw-double" style="border-color: #ff6b6b; color: #ff6b6b;">2x</div>
+            <div class="powerup-icon" id="pw-triple" style="border-color: #ff00ff; color: #ff00ff;">3x</div>
+            <div class="powerup-icon" id="pw-rapid" style="border-color: #00ffff; color: #00ffff;">⚡</div>
+            <div class="powerup-icon" id="pw-range" style="border-color: #00ff00; color: #00ff00;">↑</div>
+        </div>
+        
+        <div id="startScreen">
+            <div class="emoji-title">🐵🍌👽</div>
+            <h1>MONKEY INVADERS</h1>
+            <p class="subtitle">Defend Earth with the power of bananas!</p>
+            <button class="btn" onclick="startGame()">START GAME</button>
+            <div class="controls">
+                <span>← →</span> or <span>A D</span> Move<br>
+                <span>SPACE</span> Throw Banana<br>
+                <span>P</span> Pause
+            </div>
+        </div>
+        
+        <div id="gameOverScreen">
+            <div class="emoji-title">😭💀🍌</div>
+            <h1>GAME OVER</h1>
+            <div class="final-score">Final Score: <span id="finalScore">0</span></div>
+            <button class="btn" onclick="startGame()">PLAY AGAIN</button>
+        </div>
+        
+        <div id="levelScreen">
+            <h2 id="levelText">LEVEL 2</h2>
+            <p class="subtitle" id="levelSubtext">Here they come!</p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game state
+        let gameRunning = false;
+        let paused = false;
+        let score = 0;
+        let level = 1;
+        let lives = 3;
+        
+        // Player (Monkey)
+        const monkey = {
+            x: 400,
+            y: 530,
+            width: 60,
+            height: 60,
+            speed: 7,
+            throwCooldown: 0,
+            throwRate: 300,
+            bananaSpeed: 12,
+            multiShot: 1,
+            powerups: {
+                double: false,
+                triple: false,
+                rapid: false,
+                range: false
+            }
+        };
+        
+        // Game objects
+        let aliens = [];
+        let bananas = [];
+        let groundBananas = [];
+        let particles = [];
+        let powerups = [];
+        let stars = [];
+        
+        // Input
+        const keys = {};
+        
+        // Initialize stars background
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 0.5,
+                    speed: Math.random() * 0.5 + 0.1,
+                    twinkle: Math.random() * Math.PI
+                });
+            }
+        }
+        
+        // Create aliens for level
+        function createAliens() {
+            aliens = [];
+            const rows = Math.min(3 + Math.floor(level / 2), 6);
+            const cols = Math.min(6 + Math.floor(level / 3), 10);
+            const alienWidth = 50;
+            const alienHeight = 45;
+            const padding = 15;
+            const startX = (canvas.width - (cols * (alienWidth + padding))) / 2 + 30;
+            const startY = 60;
+            
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    aliens.push({
+                        x: startX + col * (alienWidth + padding),
+                        y: startY + row * (alienHeight + padding),
+                        width: alienWidth,
+                        height: alienHeight,
+                        type: row % 3,
+                        alive: true,
+                        crying: false,
+                        cryTimer: 0,
+                        fallSpeed: 0,
+                        rotation: 0,
+                        bobOffset: Math.random() * Math.PI * 2,
+                        slipping: false,
+                        slipDir: 0
+                    });
+                }
+            }
+            
+            // Movement pattern
+            alienDirection = 1;
+            alienSpeed = 0.5 + level * 0.15;
+            alienDropAmount = 0;
+        }
+        
+        let alienDirection = 1;
+        let alienSpeed = 0.5;
+        let alienDropAmount = 0;
+        let alienMoveTimer = 0;
+        
+        // Throw banana
+        function throwBanana() {
+            if (monkey.throwCooldown > 0) return;
+            
+            const shots = monkey.powerups.triple ? 3 : (monkey.powerups.double ? 2 : 1);
+            const spread = shots > 1 ? 15 : 0;
+            
+            for (let i = 0; i < shots; i++) {
+                const angle = shots === 1 ? 0 : (i - (shots - 1) / 2) * spread;
+                const radians = (angle - 90) * Math.PI / 180;
+                const speed = monkey.bananaSpeed * (monkey.powerups.range ? 1.5 : 1);
+                
+                bananas.push({
+                    x: monkey.x + monkey.width / 2,
+                    y: monkey.y,
+                    vx: Math.cos(radians) * speed * 0.3,
+                    vy: -speed,
+                    rotation: 0,
+                    width: 30,
+                    height: 15
+                });
+            }
+            
+            monkey.throwCooldown = monkey.powerups.rapid ? monkey.throwRate / 2 : monkey.throwRate;
+        }
+        
+        // Create particles
+        function createParticles(x, y, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    life: 1,
+                    color: color,
+                    size: Math.random() * 6 + 2
+                });
+            }
+        }
+        
+        // Create tear particles
+        function createTears(x, y) {
+            for (let i = 0; i < 6; i++) {
+                particles.push({
+                    x: x + (Math.random() - 0.5) * 20,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 3,
+                    vy: Math.random() * 3 + 1,
+                    life: 1,
+                    color: '#00bfff',
+                    size: Math.random() * 4 + 3,
+                    isTear: true
+                });
+            }
+        }
+        
+        // Spawn powerup
+        function spawnPowerup(x, y) {
+            if (Math.random() > 0.15) return; // 15% chance
+            
+            const types = ['double', 'triple', 'rapid', 'range'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const colors = {
+                double: '#ff6b6b',
+                triple: '#ff00ff',
+                rapid: '#00ffff',
+                range: '#00ff00'
+            };
+            const symbols = {
+                double: '2x',
+                triple: '3x',
+                rapid: '⚡',
+                range: '↑'
+            };
+            
+            powerups.push({
+                x: x,
+                y: y,
+                type: type,
+                color: colors[type],
+                symbol: symbols[type],
+                vy: 2,
+                pulse: 0
+            });
+        }
+        
+        // Draw functions
+        function drawStars() {
+            stars.forEach(star => {
+                star.twinkle += 0.05;
+                const alpha = 0.5 + Math.sin(star.twinkle) * 0.3;
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                star.y += star.speed;
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+            });
+        }
+        
+        function drawMonkey() {
+            ctx.save();
+            ctx.translate(monkey.x + monkey.width / 2, monkey.y + monkey.height / 2);
+            
+            // Body
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.ellipse(0, 5, 25, 28, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Face
+            ctx.fillStyle = '#DEB887';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 18, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.ellipse(-7, -5, 4, 5, 0, 0, Math.PI * 2);
+            ctx.ellipse(7, -5, 4, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eye shine
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(-8, -6, 2, 0, Math.PI * 2);
+            ctx.arc(6, -6, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Smile
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, 2, 8, 0.2, Math.PI - 0.2);
+            ctx.stroke();
+            
+            // Ears
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.arc(-22, -5, 10, 0, Math.PI * 2);
+            ctx.arc(22, -5, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#DEB887';
+            ctx.beginPath();
+            ctx.arc(-22, -5, 6, 0, Math.PI * 2);
+            ctx.arc(22, -5, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        function drawAlien(alien) {
+            ctx.save();
+            ctx.translate(alien.x + alien.width / 2, alien.y + alien.height / 2);
+            
+            if (alien.crying) {
+                ctx.rotate(alien.rotation);
+            }
+            
+            // Body color based on type
+            const colors = ['#7fff00', '#ff69b4', '#9370db'];
+            const bodyColor = colors[alien.type];
+            
+            // Body
+            ctx.fillStyle = bodyColor;
+            ctx.beginPath();
+            ctx.ellipse(0, 5, 22, 18, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Head
+            ctx.beginPath();
+            ctx.ellipse(0, -8, 18, 16, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            ctx.fillStyle = '#000';
+            if (alien.crying) {
+                // Crying eyes (squeezed shut)
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#000';
+                ctx.beginPath();
+                ctx.moveTo(-10, -10);
+                ctx.lineTo(-4, -8);
+                ctx.moveTo(-10, -6);
+                ctx.lineTo(-4, -8);
+                ctx.moveTo(10, -10);
+                ctx.lineTo(4, -8);
+                ctx.moveTo(10, -6);
+                ctx.lineTo(4, -8);
+                ctx.stroke();
+            } else {
+                // Normal big eyes
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.ellipse(-8, -10, 8, 10, 0, 0, Math.PI * 2);
+                ctx.ellipse(8, -10, 8, 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(-8, -8, 4, 0, Math.PI * 2);
+                ctx.arc(8, -8, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Mouth
+            if (alien.crying) {
+                // Sad mouth
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 8, 6, Math.PI + 0.3, -0.3);
+                ctx.stroke();
+            } else {
+                // Happy/menacing mouth
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(0, 2, 6, 0, Math.PI);
+                ctx.fill();
+            }
+            
+            // Antennae
+            ctx.strokeStyle = bodyColor;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(-8, -22);
+            ctx.lineTo(-12, -32);
+            ctx.moveTo(8, -22);
+            ctx.lineTo(12, -32);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(-12, -32, 4, 0, Math.PI * 2);
+            ctx.arc(12, -32, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        function drawBanana(x, y, rotation, scale = 1) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+            ctx.scale(scale, scale);
+            
+            // Banana shape
+            ctx.fillStyle = '#FFE135';
+            ctx.beginPath();
+            ctx.moveTo(-12, 0);
+            ctx.quadraticCurveTo(-12, -8, 0, -10);
+            ctx.quadraticCurveTo(12, -8, 12, 0);
+            ctx.quadraticCurveTo(12, 5, 0, 6);
+            ctx.quadraticCurveTo(-12, 5, -12, 0);
+            ctx.fill();
+            
+            // Darker edge
+            ctx.strokeStyle = '#DAA520';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(-10, -2);
+            ctx.quadraticCurveTo(0, -8, 10, -2);
+            ctx.stroke();
+            
+            // Tips
+            ctx.fillStyle = '#8B7355';
+            ctx.beginPath();
+            ctx.ellipse(-11, 0, 3, 2, 0.3, 0, Math.PI * 2);
+            ctx.ellipse(11, 0, 3, 2, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        function drawGroundBanana(banana) {
+            ctx.save();
+            ctx.globalAlpha = banana.alpha;
+            drawBanana(banana.x, banana.y, banana.rotation, 1.2);
+            
+            // Slippery glow
+            ctx.globalAlpha = banana.alpha * 0.3;
+            ctx.fillStyle = '#FFE135';
+            ctx.beginPath();
+            ctx.ellipse(banana.x, banana.y + 5, 25, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        function drawPowerup(powerup) {
+            ctx.save();
+            ctx.translate(powerup.x, powerup.y);
+            
+            powerup.pulse += 0.1;
+            const scale = 1 + Math.sin(powerup.pulse) * 0.1;
+            ctx.scale(scale, scale);
+            
+            // Glow
+            ctx.shadowColor = powerup.color;
+            ctx.shadowBlur = 20;
+            
+            // Background
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.beginPath();
+            ctx.roundRect(-18, -18, 36, 36, 8);
+            ctx.fill();
+            
+            // Border
+            ctx.strokeStyle = powerup.color;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Symbol
+            ctx.fillStyle = powerup.color;
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(powerup.symbol, 0, 0);
+            
+            ctx.restore();
+        }
+        
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                
+                if (p.isTear) {
+                    // Teardrop shape
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y - p.size);
+                    ctx.quadraticCurveTo(p.x + p.size, p.y, p.x, p.y + p.size);
+                    ctx.quadraticCurveTo(p.x - p.size, p.y, p.x, p.y - p.size);
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            });
+        }
+        
+        // Update functions
+        function updateMonkey(dt) {
+            if (keys['ArrowLeft'] || keys['KeyA']) {
+                monkey.x -= monkey.speed;
+            }
+            if (keys['ArrowRight'] || keys['KeyD']) {
+                monkey.x += monkey.speed;
+            }
+            
+            monkey.x = Math.max(0, Math.min(canvas.width - monkey.width, monkey.x));
+            
+            if (monkey.throwCooldown > 0) {
+                monkey.throwCooldown -= dt;
+            }
+            
+            if (keys['Space']) {
+                throwBanana();
+            }
+        }
+        
+        function updateAliens(dt) {
+            alienMoveTimer += dt;
+            
+            if (alienMoveTimer > 16) {
+                alienMoveTimer = 0;
+                
+                let hitEdge = false;
+                let lowestY = 0;
+                
+                aliens.forEach(alien => {
+                    if (!alien.alive) return;
+                    
+                    if (!alien.crying && !alien.slipping) {
+                        alien.x += alienDirection * alienSpeed;
+                        
+                        // Bob animation
+                        alien.y += Math.sin(Date.now() / 300 + alien.bobOffset) * 0.3;
+                        
+                        if (alien.x <= 10 || alien.x >= canvas.width - alien.width - 10) {
+                            hitEdge = true;
+                        }
+                        
+                        lowestY = Math.max(lowestY, alien.y);
+                    }
+                });
+                
+                if (hitEdge) {
+                    alienDirection *= -1;
+                    aliens.forEach(alien => {
+                        if (alien.alive && !alien.crying && !alien.slipping) {
+                            alien.y += 15;
+                        }
+                    });
+                }
+                
+                // Check if aliens reached bottom
+                if (lowestY > canvas.height - 120) {
+                    loseLife();
+                }
+            }
+            
+            // Update crying/falling aliens
+            aliens.forEach(alien => {
+                if (alien.crying) {
+                    alien.cryTimer -= dt;
+                    alien.fallSpeed += 0.5;
+                    alien.y += alien.fallSpeed;
+                    alien.rotation += 0.1 * (alien.slipDir || 1);
+                    
+                    if (alien.cryTimer % 100 < 20) {
+                        createTears(alien.x + alien.width/2, alien.y + alien.height/2);
+                    }
+                    
+                    if (alien.y > canvas.height + 50) {
+                        alien.alive = false;
+                    }
+                }
+                
+                if (alien.slipping && !alien.crying) {
+                    alien.x += alien.slipDir * 8;
+                    alien.rotation += alien.slipDir * 0.2;
+                    
+                    if (Math.abs(alien.rotation) > 1) {
+                        alien.crying = true;
+                        alien.cryTimer = 1000;
+                        createParticles(alien.x + alien.width/2, alien.y + alien.height/2, '#ffff00', 15);
+                    }
+                }
+            });
+        }
+        
+        function updateBananas(dt) {
+            bananas.forEach((banana, index) => {
+                banana.x += banana.vx;
+                banana.y += banana.vy;
+                banana.rotation += 0.3;
+                
+                // Check collision with aliens
+                aliens.forEach(alien => {
+                    if (!alien.alive || alien.crying) return;
+                    
+                    if (banana.x > alien.x && banana.x < alien.x + alien.width &&
+                        banana.y > alien.y && banana.y < alien.y + alien.height) {
+                        
+                        // Hit!
+                        alien.crying = true;
+                        alien.cryTimer = 1000;
+                        alien.fallSpeed = -3;
+                        
+                        createParticles(banana.x, banana.y, '#FFE135', 12);
+                        createTears(alien.x + alien.width/2, alien.y);
+                        
+                        // Add ground banana
+                        groundBananas.push({
+                            x: banana.x,
+                            y: canvas.height - 30,
+                            rotation: Math.random() * Math.PI,
+                            timer: 1500,
+                            alpha: 1
+                        });
+                        
+                        score += 100 * level;
+                        updateUI();
+                        
+                        spawnPowerup(alien.x + alien.width/2, alien.y + alien.height/2);
+                        
+                        bananas.splice(index, 1);
+                    }
+                });
+                
+                // Remove off-screen bananas
+                if (banana.y < -20) {
+                    bananas.splice(index, 1);
+                }
+            });
+        }
+        
+        function updateGroundBananas(dt) {
+            groundBananas.forEach((banana, index) => {
+                banana.timer -= dt;
+                
+                if (banana.timer < 500) {
+                    banana.alpha = banana.timer / 500;
+                }
+                
+                // Check if aliens slip
+                aliens.forEach(alien => {
+                    if (!alien.alive || alien.crying || alien.slipping) return;
+                    
+                    const dist = Math.abs(alien.x + alien.width/2 - banana.x);
+                    if (dist < 30 && alien.y > canvas.height - 150) {
+                        alien.slipping = true;
+                        alien.slipDir = alien.x > banana.x ? 1 : -1;
+                        createParticles(banana.x, banana.y, '#FFE135', 8);
+                        score += 150 * level;
+                        updateUI();
+                    }
+                });
+                
+                if (banana.timer <= 0) {
+                    groundBananas.splice(index, 1);
+                }
+            });
+        }
+        
+        function updatePowerups(dt) {
+            powerups.forEach((powerup, index) => {
+                powerup.y += powerup.vy;
+                
+                // Check collision with monkey
+                if (powerup.x > monkey.x && powerup.x < monkey.x + monkey.width &&
+                    powerup.y > monkey.y && powerup.y < monkey.y + monkey.height) {
+                    
+                    // Reset other shot powerups if getting a new one
+                    if (powerup.type === 'double' || powerup.type === 'triple') {
+                        monkey.powerups.double = false;
+                        monkey.powerups.triple = false;
+                    }
+                    
+                    monkey.powerups[powerup.type] = true;
+                    createParticles(powerup.x, powerup.y, powerup.color, 20);
+                    updatePowerupUI();
+                    powerups.splice(index, 1);
+                    
+                    // Powerup lasts for limited time (except it persists through level)
+                    setTimeout(() => {
+                        monkey.powerups[powerup.type] = false;
+                        updatePowerupUI();
+                    }, 10000);
+                }
+                
+                if (powerup.y > canvas.height + 20) {
+                    powerups.splice(index, 1);
+                }
+            });
+        }
+        
+        function updateParticles(dt) {
+            particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1; // gravity
+                p.life -= 0.02;
+                
+                if (p.life <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+        }
+        
+        function checkLevelComplete() {
+            const aliveAliens = aliens.filter(a => a.alive);
+            if (aliveAliens.length === 0) {
+                level++;
+                showLevelScreen();
+            }
+        }
+        
+        function loseLife() {
+            lives--;
+            updateUI();
+            
+            if (lives <= 0) {
+                gameOver();
+            } else {
+                // Reset aliens position
+                createAliens();
+                bananas = [];
+                groundBananas = [];
+            }
+        }
+        
+        function showLevelScreen() {
+            const levelScreen = document.getElementById('levelScreen');
+            const levelText = document.getElementById('levelText');
+            const levelSubtext = document.getElementById('levelSubtext');
+            
+            const subtexts = [
+                "Here they come!",
+                "They're getting angry!",
+                "Watch out for these ones!",
+                "They mean business!",
+                "Maximum banana time!",
+                "You're a legend!",
+                "Unstoppable!",
+                "Monkey master!"
+            ];
+            
+            levelText.textContent = `LEVEL ${level}`;
+            levelSubtext.textContent = subtexts[Math.min(level - 1, subtexts.length - 1)];
+            levelScreen.style.display = 'flex';
+            
+            setTimeout(() => {
+                levelScreen.style.display = 'none';
+                createAliens();
+                bananas = [];
+                groundBananas = [];
+                powerups = [];
+            }, 2000);
+        }
+        
+        function gameOver() {
+            gameRunning = false;
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+        }
+        
+        function updateUI() {
+            document.getElementById('scoreValue').textContent = score;
+            document.getElementById('levelValue').textContent = level;
+            document.getElementById('livesValue').textContent = lives;
+        }
+        
+        function updatePowerupUI() {
+            document.getElementById('pw-double').classList.toggle('active', monkey.powerups.double);
+            document.getElementById('pw-triple').classList.toggle('active', monkey.powerups.triple);
+            document.getElementById('pw-rapid').classList.toggle('active', monkey.powerups.rapid);
+            document.getElementById('pw-range').classList.toggle('active', monkey.powerups.range);
+        }
+        
+        // Main game loop
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            const dt = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            // Clear
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            drawStars();
+            
+            if (gameRunning && !paused) {
+                // Update
+                updateMonkey(dt);
+                updateAliens(dt);
+                updateBananas(dt);
+                updateGroundBananas(dt);
+                updatePowerups(dt);
+                updateParticles(dt);
+                checkLevelComplete();
+            }
+            
+            // Draw
+            groundBananas.forEach(drawGroundBanana);
+            
+            aliens.forEach(alien => {
+                if (alien.alive) drawAlien(alien);
+            });
+            
+            bananas.forEach(b => drawBanana(b.x, b.y, b.rotation));
+            
+            powerups.forEach(drawPowerup);
+            
+            drawMonkey();
+            
+            drawParticles();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Start game
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'none';
+            
+            // Reset game state
+            score = 0;
+            level = 1;
+            lives = 3;
+            monkey.x = 400;
+            monkey.powerups = { double: false, triple: false, rapid: false, range: false };
+            bananas = [];
+            groundBananas = [];
+            particles = [];
+            powerups = [];
+            
+            updateUI();
+            updatePowerupUI();
+            createAliens();
+            
+            gameRunning = true;
+        }
+        
+        // Input handlers
+        document.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            
+            if (e.code === 'KeyP' && gameRunning) {
+                paused = !paused;
+            }
+            
+            if (e.code === 'Space') {
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+        
+        // Initialize
+        initStars();
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>

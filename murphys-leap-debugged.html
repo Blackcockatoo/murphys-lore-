@@ -1,0 +1,1794 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Murphy's Leap | B$S · Murphy's Lore Campaign</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;700&display=swap');
+    
+    :root{
+      --bg:#070b22;
+      --bg2:#0a0e27;
+      --gold:#ffd700;
+      --gold-dim:rgba(255,215,0,0.6);
+      --ice:#9db4ff;
+      --hot:#ff6b35;
+      --violet:#8338ec;
+      --mint:#06ffa5;
+      --red:#ff4444;
+      --midnight:#0a0e27;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;overflow:hidden}
+    body{
+      background:radial-gradient(ellipse at 50% 0%, #12184a 0%, var(--bg) 50%, #040615 100%);
+      color:var(--gold);
+      font-family: 'Rajdhani', system-ui, sans-serif;
+      min-height:100vh;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* B$S Hepta-symmetry background */
+    body::before{
+      content:"";
+      position:fixed; inset:-50%;
+      background:
+        conic-gradient(from 0deg at 50% 50%,
+          transparent 0deg,
+          rgba(255,215,0,.04) 25.71deg,
+          transparent 25.71deg 51.43deg,
+          rgba(255,215,0,.04) 51.43deg 77.14deg,
+          transparent 77.14deg 102.86deg,
+          rgba(255,215,0,.04) 102.86deg 128.57deg,
+          transparent 128.57deg 154.29deg,
+          rgba(255,215,0,.04) 154.29deg 180deg,
+          transparent 180deg 205.71deg,
+          rgba(255,215,0,.04) 205.71deg 231.43deg,
+          transparent 231.43deg 257.14deg,
+          rgba(255,215,0,.04) 257.14deg 282.86deg,
+          transparent 282.86deg 308.57deg,
+          rgba(255,215,0,.04) 308.57deg 334.29deg,
+          transparent 334.29deg 360deg);
+      animation: slowSpin 120s linear infinite;
+      pointer-events:none;
+      opacity:.7;
+    }
+    @keyframes slowSpin{to{transform:rotate(360deg)}}
+
+    /* Murphy Strike Flash Overlay - VERY OBVIOUS */
+    #murphyFlash{
+      position:fixed;
+      inset:0;
+      background:rgba(255,68,68,0.5);
+      pointer-events:none;
+      opacity:0;
+      z-index:1000;
+    }
+    #murphyFlash.active{
+      animation: murphyPulse 0.8s ease-out;
+    }
+    @keyframes murphyPulse{
+      0%{opacity:0.7; background:rgba(255,68,68,0.6)}
+      25%{opacity:0.5; background:rgba(255,68,68,0.4)}
+      50%{opacity:0.6; background:rgba(255,68,68,0.5)}
+      75%{opacity:0.3; background:rgba(255,68,68,0.2)}
+      100%{opacity:0; background:rgba(255,68,68,0)}
+    }
+    
+    /* Screen shake for Murphy strikes */
+    @keyframes screenShake{
+      0%,100%{transform:translate(0,0)}
+      10%{transform:translate(-8px,-4px)}
+      20%{transform:translate(8px,4px)}
+      30%{transform:translate(-6px,2px)}
+      40%{transform:translate(6px,-2px)}
+      50%{transform:translate(-4px,4px)}
+      60%{transform:translate(4px,-4px)}
+      70%{transform:translate(-2px,2px)}
+      80%{transform:translate(2px,-2px)}
+      90%{transform:translate(-1px,1px)}
+    }
+    #wrap.shake{
+      animation: screenShake 0.5s ease-out;
+    }
+
+    /* Lore Cancel Flash */
+    #loreFlash{
+      position:fixed;
+      inset:0;
+      background:rgba(6,255,165,0.3);
+      pointer-events:none;
+      opacity:0;
+      z-index:1000;
+    }
+    #loreFlash.active{
+      animation: lorePulse 0.5s ease-out;
+    }
+    @keyframes lorePulse{
+      0%{opacity:0.5}
+      100%{opacity:0}
+    }
+
+    /* B$S Brand Watermark */
+    .bss-watermark{
+      position:fixed;
+      bottom:10px; right:10px;
+      font-family:'Orbitron',monospace;
+      font-size:10px;
+      color:rgba(255,215,0,.15);
+      letter-spacing:2px;
+      pointer-events:none;
+      z-index:1;
+    }
+
+    #wrap{
+      position:fixed; inset:0;
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+    }
+    
+    header{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:space-between;
+      padding:8px 12px;
+      background:linear-gradient(180deg, rgba(10,14,39,.95), rgba(10,14,39,.7));
+      border-bottom:1px solid rgba(255,215,0,.22);
+      backdrop-filter: blur(8px);
+      position:relative;
+      z-index:2;
+      flex-wrap:wrap;
+    }
+    
+    .brand{
+      display:flex; align-items:center; gap:8px;
+      font-family:'Orbitron',monospace;
+      font-weight:900;
+      font-size:13px;
+      letter-spacing:1px;
+      text-shadow: 0 0 20px rgba(255,215,0,.4);
+    }
+    .brand .m{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:26px; height:26px;
+      background:linear-gradient(135deg, var(--gold), #ffa500);
+      border-radius:5px;
+      color:var(--midnight);
+      font-weight:900;
+      font-size:15px;
+      box-shadow: 0 0 16px rgba(255,215,0,.3);
+    }
+    
+    .pill{
+      display:none;
+      align-items:center; gap:6px;
+      border:1px solid rgba(255,215,0,.25);
+      border-radius:999px;
+      padding:4px 10px;
+      background:rgba(255,215,0,.08);
+      color:var(--ice);
+      font-weight:700;
+      font-size:10px;
+      letter-spacing:.5px;
+    }
+    @media(min-width:600px){.pill{display:inline-flex}}
+    .pill b{color:var(--gold)}
+    
+    .btn{
+      appearance:none;
+      border:1px solid rgba(255,215,0,.4);
+      background:linear-gradient(135deg, rgba(255,215,0,.95), rgba(255,165,0,.92));
+      color:var(--midnight);
+      font-family:'Orbitron',monospace;
+      font-weight:900;
+      font-size:11px;
+      letter-spacing:1px;
+      border-radius:999px;
+      padding:8px 14px;
+      cursor:pointer;
+      box-shadow:0 6px 20px rgba(255,215,0,.2);
+      transition:all .12s ease;
+      touch-action:manipulation;
+    }
+    .btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 28px rgba(255,215,0,.3);
+    }
+    .btn:active{transform:translateY(0); filter:saturate(1.1)}
+    .btn.ghost{
+      background:rgba(255,215,0,.08);
+      color:var(--gold);
+      box-shadow:none;
+    }
+    .btn.ghost:hover{background:rgba(255,215,0,.15)}
+    .btn.lore{
+      background:linear-gradient(135deg, rgba(6,255,165,.9), rgba(6,200,130,.85));
+      color:var(--midnight);
+      border-color:rgba(6,255,165,.5);
+      box-shadow:0 6px 20px rgba(6,255,165,.2);
+    }
+    .btn.utopia{
+      background:linear-gradient(135deg, rgba(157,180,255,.9), rgba(100,140,255,.85));
+      color:var(--midnight);
+      border-color:rgba(157,180,255,.5);
+      box-shadow:0 6px 20px rgba(157,180,255,.2);
+    }
+
+    #hud{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+    #hud .stat{font-size:11px; color:#e0e7ff; opacity:.95; font-weight:500}
+    #hud .stat b{color:var(--gold); font-size:12px; font-weight:700}
+    
+    #meter{width:100px; height:8px; border-radius:999px; border:1px solid rgba(255,215,0,.3); background:rgba(0,0,0,.3); overflow:hidden}
+    #meter > i{display:block; height:100%; width:0%; background:linear-gradient(90deg, var(--gold), var(--mint)); box-shadow:0 0 10px rgba(255,215,0,.4); transition: width 0.2s ease}
+    
+    #loreBar{width:60px; height:6px; border-radius:999px; border:1px solid rgba(6,255,165,.4); background:rgba(0,0,0,.3); overflow:hidden}
+    #loreBar > i{display:block; height:100%; width:0%; background:linear-gradient(90deg, var(--mint), rgba(6,200,130,.8)); box-shadow:0 0 8px rgba(6,255,165,.3); transition: width 0.15s ease}
+
+    main{position:relative; z-index:1; display:grid; place-items:center; padding:8px; overflow:hidden}
+    #game{
+      width:min(96vw, 960px);
+      height:min(68vh, 680px);
+      border-radius:14px;
+      border:2px solid rgba(255,215,0,.35);
+      background:linear-gradient(180deg, rgba(0,8,20,.8), rgba(0,8,20,.6));
+      box-shadow: 0 16px 50px rgba(0,0,0,.6), 0 0 30px rgba(255,215,0,.08), inset 0 0 50px rgba(0,0,0,.3);
+      display:block;
+      touch-action:none;
+    }
+
+    footer{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:8px 12px;
+      background:linear-gradient(180deg, rgba(10,14,39,.7), rgba(10,14,39,.95));
+      border-top:1px solid rgba(255,215,0,.22);
+      backdrop-filter: blur(8px);
+      position:relative;
+      z-index:2;
+      flex-wrap:wrap;
+    }
+    .help{color:#e0e7ff; font-size:10px; opacity:.9; flex:1; min-width:200px}
+    kbd{
+      font-family:'Orbitron',monospace;
+      font-size:9px;
+      font-weight:700;
+      background:rgba(255,215,0,.1);
+      border:1px solid rgba(255,215,0,.25);
+      padding:2px 5px;
+      border-radius:5px;
+      color:var(--gold);
+    }
+
+    #overlay{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; z-index:10}
+    
+    .panel{
+      pointer-events:auto;
+      width:min(96vw, 640px);
+      max-height:90vh;
+      overflow-y:auto;
+      border-radius:18px;
+      border:1px solid rgba(255,215,0,.3);
+      background:rgba(7,11,34,.92);
+      box-shadow: 0 24px 70px rgba(0,0,0,.7), 0 0 40px rgba(255,215,0,.08);
+      padding:20px;
+      backdrop-filter: blur(12px);
+      text-align:center;
+    }
+    .panel h1{
+      font-family:'Orbitron',monospace;
+      margin:0 0 6px;
+      font-size:24px;
+      letter-spacing:2px;
+      text-shadow: 0 0 20px rgba(255,215,0,.4);
+      font-weight:900;
+    }
+    .panel h2{
+      font-family:'Orbitron',monospace;
+      font-size:12px;
+      color:var(--mint);
+      letter-spacing:2px;
+      margin-bottom:14px;
+      font-weight:700;
+    }
+    .panel p{margin:0 0 12px; color:#e0e7ff; line-height:1.5; font-size:13px}
+    
+    .philosophy{
+      background:rgba(255,215,0,.06);
+      border:1px solid rgba(255,215,0,.15);
+      border-radius:10px;
+      padding:12px 14px;
+      margin:14px 0;
+      text-align:left;
+    }
+    .philosophy h3{
+      font-family:'Orbitron',monospace;
+      font-size:10px;
+      letter-spacing:2px;
+      color:var(--gold);
+      margin-bottom:6px;
+    }
+    .philosophy .law{color:#ff8888; margin-bottom:4px; font-size:12px}
+    .philosophy .lore{color:var(--mint); font-size:12px}
+    
+    .legend-grid{
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
+      gap:8px;
+      margin:14px 0;
+      text-align:left;
+    }
+    @media(min-width:500px){.legend-grid{grid-template-columns:repeat(4, 1fr)}}
+    .legend-item{
+      background:rgba(0,0,0,.2);
+      border-radius:8px;
+      padding:8px 10px;
+      border:1px solid rgba(255,215,0,.1);
+    }
+    .legend-item .icon{font-size:16px; margin-bottom:2px}
+    .legend-item .label{font-size:10px; color:var(--ice); font-weight:600}
+    .legend-item .desc{font-size:9px; color:rgba(224,231,255,.6); margin-top:1px}
+    
+    .mode-grid{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:8px;
+      margin:14px 0;
+    }
+    .mode-card{
+      background:rgba(0,0,0,.2);
+      border-radius:10px;
+      padding:10px;
+      border:2px solid transparent;
+      cursor:pointer;
+      transition:all .15s ease;
+    }
+    .mode-card:hover{transform:translateY(-2px)}
+    .mode-card.selected{border-color:var(--gold); background:rgba(255,215,0,.08)}
+    .mode-card.selected.utopia{border-color:var(--ice)}
+    .mode-card.selected.mayhem{border-color:var(--red)}
+    .mode-card h4{
+      font-family:'Orbitron',monospace;
+      font-size:11px;
+      letter-spacing:1px;
+      margin-bottom:4px;
+    }
+    .mode-card p{font-size:9px; color:rgba(224,231,255,.7); margin:0}
+    .mode-card.utopia h4{color:var(--ice)}
+    .mode-card.fairplay h4{color:var(--gold)}
+    .mode-card.mayhem h4{color:var(--red)}
+    
+    .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:center}
+    
+    .tagline{
+      font-family:'Orbitron',monospace;
+      margin-top:14px;
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:2px;
+      color:var(--gold);
+      text-shadow: 0 0 16px rgba(255,215,0,.35);
+    }
+    .tiny{font-size:10px; color:rgba(224,231,255,.7)}
+    
+    .murphy-banner{
+      margin:10px 0 0;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid rgba(255,68,68,.3);
+      background:rgba(255,68,68,.1);
+      color:#ffe8e8;
+      font-weight:700;
+      font-size:12px;
+      display:none;
+    }
+    .murphy-banner.show{display:block}
+    
+    .lore-banner{
+      margin:8px 0 0;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid rgba(6,255,165,.25);
+      background:rgba(6,255,165,.08);
+      color:#eafff6;
+      font-weight:700;
+      font-size:12px;
+      display:none;
+    }
+    .lore-banner.show{display:block}
+    
+    .highscore{margin-top:8px; font-size:11px; color:var(--mint); font-weight:700}
+
+    /* Virtual joystick */
+    #stick{
+      position:absolute;
+      left:14px; bottom:14px;
+      width:100px; height:100px;
+      border-radius:999px;
+      background:rgba(255,215,0,.1);
+      border:2px solid rgba(255,215,0,.3);
+      display:none;
+      z-index:20;
+    }
+    #stick i{
+      position:absolute;
+      left:50%; top:50%;
+      width:40px; height:40px;
+      border-radius:999px;
+      transform:translate(-50%,-50%);
+      background:rgba(255,215,0,.25);
+      border:2px solid rgba(255,215,0,.4);
+      box-shadow:0 0 14px rgba(255,215,0,.2);
+      transition: transform 0.06s ease;
+    }
+    
+    /* Mobile Lore button */
+    #loreBtn{
+      position:absolute;
+      right:14px; bottom:14px;
+      width:70px; height:70px;
+      border-radius:999px;
+      background:linear-gradient(135deg, rgba(6,255,165,.3), rgba(6,200,130,.25));
+      border:2px solid rgba(6,255,165,.5);
+      display:none;
+      z-index:20;
+      font-family:'Orbitron',monospace;
+      font-size:10px;
+      font-weight:900;
+      color:var(--mint);
+      text-shadow:0 0 10px rgba(6,255,165,.5);
+      cursor:pointer;
+      box-shadow:0 0 20px rgba(6,255,165,.2);
+    }
+    #loreBtn:active{
+      transform:scale(0.95);
+      background:rgba(6,255,165,.4);
+    }
+    
+    @media (hover:none) and (pointer:coarse){
+      #stick{display:block}
+      #loreBtn{display:flex; align-items:center; justify-content:center}
+    }
+
+    /* Murphy Strike popup - much bigger */
+    @keyframes popFloat {
+      0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+      15% { transform: translate(-50%, -15px) scale(1.15); opacity: 1; }
+      75% { transform: translate(-50%, -40px) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -60px) scale(0.8); opacity: 0; }
+    }
+    @keyframes shakeIt {
+      0%,100%{transform:translate(-50%,-20px)}
+      20%{transform:translate(calc(-50% + 8px),-20px)}
+      40%{transform:translate(calc(-50% - 8px),-20px)}
+      60%{transform:translate(calc(-50% + 5px),-20px)}
+      80%{transform:translate(calc(-50% - 5px),-20px)}
+    }
+    .popup {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, 0);
+      font-family:'Orbitron',monospace;
+      font-weight: 900;
+      letter-spacing:1px;
+      pointer-events: none;
+      animation: popFloat 1.4s ease-out forwards;
+      z-index: 100;
+      white-space:nowrap;
+    }
+    .popup.combo {top: 28%; font-size: 20px; color: var(--gold); text-shadow: 0 0 24px rgba(255,215,0,.6)}
+    .popup.murphy {
+      top: 15%;
+      font-size: 26px;
+      color: #fff;
+      text-shadow: 0 0 30px rgba(255,68,68,.9), 0 0 60px rgba(255,68,68,.5), 0 3px 0 #900;
+      animation: shakeIt 0.5s ease-out, popFloat 2s ease-out forwards;
+      padding: 12px 24px;
+      background: rgba(255,68,68,.25);
+      border-radius: 12px;
+      border: 3px solid rgba(255,68,68,.7);
+      box-shadow: 0 0 40px rgba(255,68,68,.4), inset 0 0 20px rgba(255,68,68,.2);
+    }
+    .popup.lore {
+      top: 24%;
+      font-size: 18px;
+      color: var(--mint);
+      text-shadow: 0 0 24px rgba(6,255,165,.6);
+    }
+    
+    /* Active Murphy indicator - VERY VISIBLE */
+    #murphyIndicator{
+      position:absolute;
+      top:10px;
+      left:50%;
+      transform:translateX(-50%);
+      font-family:'Orbitron',monospace;
+      font-size:16px;
+      font-weight:900;
+      color:#fff;
+      text-shadow:0 0 20px rgba(255,68,68,.8);
+      padding:10px 20px;
+      background:rgba(255,68,68,.3);
+      border:3px solid rgba(255,68,68,.7);
+      border-radius:10px;
+      display:none;
+      z-index:50;
+      animation: indicatorPulse 0.8s ease-in-out infinite;
+      box-shadow: 0 0 30px rgba(255,68,68,.4);
+    }
+    #murphyIndicator.show{display:block}
+    @keyframes indicatorPulse{
+      0%,100%{opacity:1; transform:translateX(-50%) scale(1); box-shadow: 0 0 30px rgba(255,68,68,.4)}
+      50%{opacity:0.8; transform:translateX(-50%) scale(1.08); box-shadow: 0 0 50px rgba(255,68,68,.6)}
+    }
+  </style>
+</head>
+<body>
+  <div id="murphyFlash"></div>
+  <div id="loreFlash"></div>
+  <div class="bss-watermark">B$S</div>
+  
+  <div id="wrap">
+    <header>
+      <div class="brand">
+        <span class="m">M</span>
+        <span>MURPHY'S LEAP</span>
+        <span class="pill"><b>GOLDEN FROG</b> · Campaign Arcade</span>
+      </div>
+      <div id="hud">
+        <div class="stat">SCORE <b id="score">0</b></div>
+        <div class="stat">LVL <b id="level">1</b></div>
+        <div class="stat">♥ <b id="lives">3</b></div>
+        <div class="stat" id="modeDisplay">MODE <b id="mode">FAIRPLAY</b></div>
+        <div id="meter"><i></i></div>
+        <div class="stat">LORE</div>
+        <div id="loreBar"><i></i></div>
+      </div>
+    </header>
+    
+    <main>
+      <canvas id="game"></canvas>
+      <div id="overlay"></div>
+      <div id="murphyIndicator">⚠️ MURPHY'S LAW ACTIVE</div>
+      <div id="stick"><i></i></div>
+      <button id="loreBtn">USE<br>LORE</button>
+    </main>
+    
+    <footer>
+      <div class="help">
+        <kbd>WASD</kbd>/<kbd>↑←↓→</kbd> move · <kbd>SPACE</kbd> use Lore to cancel Murphy · <span style="color:var(--gold)">●</span> pellets · <span style="color:var(--mint)">⬢</span> Lore orbs
+      </div>
+      <button class="btn ghost" id="restartBtn">RESTART</button>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  'use strict';
+
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const murphyFlash = document.getElementById('murphyFlash');
+  const loreFlash = document.getElementById('loreFlash');
+  const murphyIndicator = document.getElementById('murphyIndicator');
+
+  // Restart button
+  document.getElementById('restartBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    location.reload();
+  });
+  
+  // Mobile Lore button
+  document.getElementById('loreBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    if(state.screen === 'play') useLore();
+  });
+
+  // Audio
+  let audioCtx;
+  function initAudio(){ 
+    if(!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  function tone(freq, dur=0.08, type='sine', vol=0.1){
+    if(!audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      g.gain.value = vol;
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start();
+      g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+      osc.stop(audioCtx.currentTime + dur);
+    } catch(e){}
+  }
+  const SFX = {
+    hop: function(){ tone(480, 0.04, 'square', 0.06); },
+    pellet: function(){ tone(880, 0.05, 'square', 0.08); },
+    lore: function(){ tone(1320, 0.07, 'sine', 0.1); setTimeout(function(){ tone(1760, 0.07, 'sine', 0.1); }, 40); },
+    death: function(){ for(var i=0;i<4;i++) setTimeout(function(idx){ return function(){ tone(350-idx*50, 0.12, 'sawtooth', 0.1); }; }(i), i*60); },
+    levelUp: function(){ tone(523, 0.08, 'square', 0.1); setTimeout(function(){ tone(659, 0.08, 'square', 0.1); }, 80); setTimeout(function(){ tone(784, 0.12, 'square', 0.1); }, 160); },
+    murphy: function(){ 
+      // Loud alarming sound sequence
+      tone(220, 0.25, 'sawtooth', 0.2); 
+      setTimeout(function(){ tone(180, 0.2, 'sawtooth', 0.18); }, 80);
+      setTimeout(function(){ tone(140, 0.25, 'sawtooth', 0.15); }, 160);
+      setTimeout(function(){ tone(100, 0.3, 'square', 0.12); }, 250);
+    },
+    cancel: function(){ 
+      tone(880, 0.08, 'sine', 0.12); 
+      setTimeout(function(){ tone(1100, 0.08, 'sine', 0.12); }, 60); 
+      setTimeout(function(){ tone(1320, 0.1, 'sine', 0.12); }, 120); 
+    },
+    shield: function(){ tone(1100, 0.12, 'sine', 0.1); }
+  };
+
+  // Flash effects - MORE OBVIOUS
+  function flashMurphy(){
+    murphyFlash.classList.remove('active');
+    void murphyFlash.offsetWidth;
+    murphyFlash.classList.add('active');
+    // Add screen shake
+    var wrap = document.getElementById('wrap');
+    wrap.classList.remove('shake');
+    void wrap.offsetWidth;
+    wrap.classList.add('shake');
+    setTimeout(function(){ 
+      murphyFlash.classList.remove('active'); 
+      wrap.classList.remove('shake');
+    }, 800);
+  }
+  function flashLore(){
+    loreFlash.classList.remove('active');
+    void loreFlash.offsetWidth;
+    loreFlash.classList.add('active');
+    setTimeout(function(){ loreFlash.classList.remove('active'); }, 500);
+  }
+
+  // Particles
+  var particles = [];
+  function spawnParticles(x, y, color, count){
+    count = count || 6;
+    for(var i=0; i<count; i++){
+      var a = (Math.PI*2/count)*i + Math.random()*0.4;
+      particles.push({ x:x, y:y, vx: Math.cos(a)*(2.5+Math.random()*2), vy: Math.sin(a)*(2.5+Math.random()*2), life: 1, decay: 0.018+Math.random()*0.012, color:color, size: 2+Math.random()*3 });
+    }
+  }
+  function updateParticles(dt){
+    for(var i=particles.length-1; i>=0; i--){
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      p.vx *= 0.96; p.vy *= 0.96;
+      p.life -= p.decay;
+      if(p.life <= 0) particles.splice(i, 1);
+    }
+  }
+  function drawParticles(){
+    ctx.save();
+    for(var i=0; i<particles.length; i++){
+      var p = particles[i];
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Popups
+  function popup(text, type){
+    var el = document.createElement('div');
+    el.className = 'popup ' + type;
+    el.textContent = text;
+    document.getElementById('overlay').appendChild(el);
+    setTimeout(function(){ el.remove(); }, type === 'murphy' ? 1600 : 1400);
+  }
+
+  // World
+  var WORLD = { cols: 17, rows: 13, tile: 50 };
+
+  // Difficulty modes - UTOPIAN added
+  var MODES = {
+    UTOPIAN: {
+      name: 'UTOPIAN',
+      tagline: 'Chill mode. Rare chaos.',
+      desc: 'Minimal Murphy events. Max Lore. Perfect for learning.',
+      maxLore: 8,
+      loreCancelCost: 1,
+      loreRemovesWalls: true,
+      murphyInterval: 20,
+      murphyChanceBase: 0.03,
+      murphyChancePerLevel: 0.005,
+      murphyDurMul: 0.4,
+      wallDurMul: 0.3,
+      trafficMul: 0.5,
+      ghostMoveDelay: 0.9,
+      ghostMoodBase: 0.1,
+      ghostMoodPerLevel: 0.01,
+      ghostRageBoost: 0.05,
+      respawnShield: 5.0,
+      loreCountBase: 6,
+      loreCountDiv: 1,
+      carCount: 1
+    },
+    FAIRPLAY: {
+      name: 'FAIRPLAY',
+      tagline: 'Balanced challenge.',
+      desc: 'Steady Murphy events. Good Lore generation. Fair.',
+      maxLore: 4,
+      loreCancelCost: 1,
+      loreRemovesWalls: true,
+      murphyInterval: 6.5,
+      murphyChanceBase: 0.14,
+      murphyChancePerLevel: 0.04,
+      murphyDurMul: 1.0,
+      wallDurMul: 1.0,
+      trafficMul: 1.0,
+      ghostMoveDelay: 0.44,
+      ghostMoodBase: 0.24,
+      ghostMoodPerLevel: 0.05,
+      ghostRageBoost: 0.25,
+      respawnShield: 2.5,
+      loreCountBase: 2,
+      loreCountDiv: 2,
+      carCount: 2
+    },
+    MAYHEM: {
+      name: 'MAYHEM',
+      tagline: 'Maximum chaos.',
+      desc: 'Frequent Murphy events. Scarce Lore. Brutal.',
+      maxLore: 2,
+      loreCancelCost: 2,
+      loreRemovesWalls: false,
+      murphyInterval: 4.0,
+      murphyChanceBase: 0.25,
+      murphyChancePerLevel: 0.06,
+      murphyDurMul: 1.4,
+      wallDurMul: 1.5,
+      trafficMul: 1.2,
+      ghostMoveDelay: 0.28,
+      ghostMoodBase: 0.35,
+      ghostMoodPerLevel: 0.06,
+      ghostRageBoost: 0.45,
+      respawnShield: 1.0,
+      loreCountBase: 1,
+      loreCountDiv: 3,
+      carCount: 3
+    }
+  };
+
+  var state = {
+    screen: 'title', t: 0, score: 0, lives: 3, level: 1,
+    totalPellets: 0, collected: 0, lore: 0, maxLore: MODES.FAIRPLAY.maxLore,
+    mode: 'FAIRPLAY',
+    invert: 0, blackout: 0, slip: 0, trafficSlow: 0, shield: 0, freeze: 0, speed: 0
+  };
+
+  function modeCfg(){ return MODES[state.mode] || MODES.FAIRPLAY; }
+  function setMode(m){ 
+    state.mode = MODES[m] ? m : 'FAIRPLAY';
+    state.maxLore = modeCfg().maxLore; 
+    updateHUD(); 
+    showTitle(); 
+  }
+  window.setMode = setMode;
+
+  // Smooth player position for rendering
+  var player = { col: 0, row: 0, lastMove: 0, renderX: 0, renderY: 0 };
+  var ghost = { col: 0, row: 0, mood: 0.3, lastMove: 0, renderX: 0, renderY: 0 };
+  var lanes = [], pellets = [], loreOrbs = [], walls = [];
+  var keys = {};
+  var stickPos = { x: 0, y: 0 };
+
+  // High score
+  var highScore = 0;
+  try { highScore = parseInt(localStorage.getItem('murphysLeapHS_BSS2') || '0'); } catch(e){}
+  function saveHS(){ try { if(state.score > highScore){ highScore = state.score; localStorage.setItem('murphysLeapHS_BSS2', highScore.toString()); } } catch(e){} }
+
+  // Input handling
+  document.addEventListener('keydown', function(e) {
+    if(state.screen === 'title' && (e.key.startsWith('Arrow') || 'wasd '.includes(e.key.toLowerCase()))){
+      initAudio(); startGame(); e.preventDefault(); return;
+    }
+    if(state.screen === 'gameover' && (e.key === ' ' || e.key === 'Enter')){
+      location.reload(); e.preventDefault(); return;
+    }
+    if(state.screen === 'levelcomplete' && (e.key === ' ' || e.key === 'Enter')){
+      continueGame(); e.preventDefault(); return;
+    }
+    keys[e.key] = true;
+    if(e.key === ' '){
+      if(state.screen === 'play') useLore();
+      else if(state.screen === 'pause') resumeGame();
+      e.preventDefault();
+    }
+    if(e.key === 'Escape' && state.screen === 'play'){ showPause(); e.preventDefault(); }
+  });
+  document.addEventListener('keyup', function(e) { keys[e.key] = false; });
+
+  // Touch stick
+  var stickTouch = null;
+  var stickEl = document.getElementById('stick');
+  
+  stickEl.addEventListener('touchstart', function(e) {
+    e.preventDefault(); 
+    initAudio();
+    if(state.screen === 'title'){ startGame(); return; }
+    stickTouch = e.touches[0].identifier;
+    updateStick(e.touches[0]);
+  }, {passive: false});
+  
+  document.addEventListener('touchmove', function(e) {
+    if(stickTouch === null) return;
+    for(var i=0; i<e.touches.length; i++){
+      if(e.touches[i].identifier === stickTouch){ 
+        updateStick(e.touches[i]); 
+        e.preventDefault(); 
+        break; 
+      }
+    }
+  }, {passive: false});
+  
+  document.addEventListener('touchend', function(e) {
+    for(var i=0; i<e.changedTouches.length; i++){
+      if(e.changedTouches[i].identifier === stickTouch){
+        stickTouch = null; 
+        stickPos = {x:0, y:0};
+        document.querySelector('#stick i').style.transform = 'translate(-50%,-50%)';
+        break;
+      }
+    }
+  });
+  
+  function updateStick(touch){
+    var rect = stickEl.getBoundingClientRect();
+    var cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+    var dx = touch.clientX - cx, dy = touch.clientY - cy;
+    var dist = Math.sqrt(dx*dx + dy*dy);
+    var max = rect.width * 0.38;
+    var ratio = Math.min(dist, max) / max;
+    var angle = Math.atan2(dy, dx);
+    stickPos.x = Math.cos(angle) * ratio;
+    stickPos.y = Math.sin(angle) * ratio;
+    var knob = document.querySelector('#stick i');
+    knob.style.transform = 'translate(calc(-50% + '+stickPos.x*max+'px), calc(-50% + '+stickPos.y*max+'px))';
+  }
+
+  function inputVector(){
+    var x = 0, y = 0;
+    if(keys.ArrowLeft || keys.a || keys.A) x -= 1;
+    if(keys.ArrowRight || keys.d || keys.D) x += 1;
+    if(keys.ArrowUp || keys.w || keys.W) y -= 1;
+    if(keys.ArrowDown || keys.s || keys.S) y += 1;
+    x += stickPos.x; y += stickPos.y;
+    if(state.invert > 0){ x = -x; y = -y; }
+    return { x: x, y: y };
+  }
+
+  // Check if Murphy effect is active
+  function hasMurphyEffect(){
+    return state.invert > 0 || state.blackout > 0 || state.slip > 0 || walls.length > 0;
+  }
+
+  // Update Murphy indicator
+  function updateMurphyIndicator(){
+    if(hasMurphyEffect() && state.screen === 'play'){
+      var effectName = '';
+      if(state.invert > 0) effectName = '⚠️ CONTROLS INVERTED';
+      else if(state.blackout > 0) effectName = '🌑 BLACKOUT';
+      else if(state.slip > 0) effectName = '🧊 SLIPPERY';
+      else if(walls.length > 0) effectName = '🧱 OBSTACLE';
+      murphyIndicator.textContent = effectName;
+      murphyIndicator.classList.add('show');
+    } else {
+      murphyIndicator.classList.remove('show');
+    }
+  }
+
+  // UI Panels
+  function showTitle(){
+    var currentMode = state.mode;
+    var cfg = modeCfg();
+    
+    var btnClass = 'btn lore';
+    if(currentMode === 'UTOPIAN') btnClass = 'btn utopia';
+    else if(currentMode === 'MAYHEM') btnClass = 'btn ghost';
+    
+    document.getElementById('overlay').innerHTML = 
+      '<div class="panel">'+
+        '<h1>🐸 MURPHY\'S LEAP</h1>'+
+        '<h2>THE CAMPAIGN ARCADE</h2>'+
+        
+        '<div class="philosophy">'+
+          '<h3>THE PHILOSOPHY</h3>'+
+          '<div class="law"><strong>MURPHY\'S LAW:</strong> "If something can go wrong, it will."</div>'+
+          '<div class="lore"><strong>MURPHY\'S LORE:</strong> "It\'s what you do next that makes the legend."</div>'+
+        '</div>'+
+        
+        '<p>'+
+          '<strong>You are Murphy</strong> — cross the lanes, dodge obstacles, collect pellets. '+
+          'When Murphy\'s Law strikes (inverted controls, blackouts, etc.), press <kbd>SPACE</kbd> to spend <span style="color:var(--mint)">Lore</span> and cancel it.'+
+        '</p>'+
+        
+        '<div class="legend-grid">'+
+          '<div class="legend-item">'+
+            '<div class="icon">🐸</div>'+
+            '<div class="label">MURPHY (You)</div>'+
+            '<div class="desc">Navigate the chaos</div>'+
+          '</div>'+
+          '<div class="legend-item">'+
+            '<div class="icon" style="color:var(--gold)">●</div>'+
+            '<div class="label">PELLETS</div>'+
+            '<div class="desc">Collect them all</div>'+
+          '</div>'+
+          '<div class="legend-item">'+
+            '<div class="icon" style="color:var(--mint)">⬢</div>'+
+            '<div class="label">LORE ORBS</div>'+
+            '<div class="desc">Cancel Murphy events</div>'+
+          '</div>'+
+          '<div class="legend-item">'+
+            '<div class="icon" style="color:var(--red)">👻</div>'+
+            '<div class="label">DOUBT</div>'+
+            '<div class="desc">Avoid the ghost</div>'+
+          '</div>'+
+        '</div>'+
+
+        '<div style="font-family:\'Orbitron\',monospace;font-size:10px;letter-spacing:2px;color:var(--ice);margin-bottom:8px">SELECT MODE</div>'+
+        
+        '<div class="mode-grid">'+
+          '<div class="mode-card utopia '+(currentMode==='UTOPIAN'?'selected':'')+'" onclick="window.setMode(\'UTOPIAN\')">'+
+            '<h4>☮️ UTOPIAN</h4>'+
+            '<p>Chill. Rare chaos. Learn the game.</p>'+
+          '</div>'+
+          '<div class="mode-card fairplay '+(currentMode==='FAIRPLAY'?'selected':'')+'" onclick="window.setMode(\'FAIRPLAY\')">'+
+            '<h4>⚖️ FAIRPLAY</h4>'+
+            '<p>Balanced. Steady challenge.</p>'+
+          '</div>'+
+          '<div class="mode-card mayhem '+(currentMode==='MAYHEM'?'selected':'')+'" onclick="window.setMode(\'MAYHEM\')">'+
+            '<h4>💀 MAYHEM</h4>'+
+            '<p>Brutal. Maximum Murphy.</p>'+
+          '</div>'+
+        '</div>'+
+
+        '<div class="row" style="margin-top:16px">'+
+          '<button class="'+btnClass+'" onclick="window.startGame()">▶ START '+cfg.name+'</button>'+
+        '</div>'+
+        
+        '<div class="tagline">VOTE MURPHY\'S LORE</div>'+
+        (highScore > 0 ? '<div class="highscore">🏆 High Score: '+highScore+'</div>' : '')+
+        '<div class="tiny" style="margin-top:10px;opacity:.5">Blue Snake Studios · B$S</div>'+
+      '</div>';
+  }
+
+  function showPause(){
+    state.screen = 'pause';
+    var cfg = modeCfg();
+    document.getElementById('overlay').innerHTML = 
+      '<div class="panel">'+
+        '<h1>⏸ PAUSED</h1>'+
+        '<p>Take a breath. Murphy\'s Law waits for no one.</p>'+
+        '<div class="tiny">Mode: <strong style="color:var(--gold)">'+cfg.name+'</strong></div>'+
+        '<div class="row" style="margin-top:14px">'+
+          '<button class="btn lore" onclick="window.resumeGame()">▶ RESUME</button>'+
+          '<button class="btn ghost" onclick="location.reload()">RESTART</button>'+
+        '</div>'+
+      '</div>';
+  }
+
+  function showGameOver(){
+    state.screen = 'gameover'; 
+    saveHS();
+    murphyIndicator.classList.remove('show');
+    var isNew = state.score >= highScore && state.score > 0;
+    var cfg = modeCfg();
+    document.getElementById('overlay').innerHTML = 
+      '<div class="panel">'+
+        '<h1>💀 MURPHY\'S LAW WINS</h1>'+
+        '<p>Score: <strong style="color:var(--gold);font-size:26px">'+state.score+'</strong></p>'+
+        '<div class="tiny">Mode: <strong style="color:var(--gold)">'+cfg.name+'</strong> · Level '+state.level+'</div>'+
+        (isNew ? '<div style="color:var(--mint);font-weight:900;margin:10px 0">🏆 NEW HIGH SCORE!</div>' : '')+
+        '<div class="murphy-banner show">'+
+          '"What can go wrong, will go wrong."<br>'+
+          '<span style="font-size:11px;opacity:.8">But now you know: it\'s what you do next that matters.</span>'+
+        '</div>'+
+        '<div class="row" style="margin-top:14px">'+
+          '<button class="btn" onclick="location.reload()">TRY AGAIN</button>'+
+        '</div>'+
+        (highScore > 0 ? '<div class="highscore">🏆 Best: '+highScore+'</div>' : '')+
+        '<div class="tagline" style="margin-top:12px">THE LORE CONTINUES</div>'+
+      '</div>';
+  }
+
+  function showLevelComplete(){
+    state.screen = 'levelcomplete';
+    murphyIndicator.classList.remove('show');
+    document.getElementById('overlay').innerHTML = 
+      '<div class="panel">'+
+        '<h1>⭐ LEVEL '+(state.level - 1)+' CLEAR!</h1>'+
+        '<p>Score: <strong style="color:var(--gold);font-size:22px">'+state.score+'</strong></p>'+
+        '<div class="lore-banner show">'+
+          'Murphy\'s Law struck. You adapted. <strong>That\'s Lore.</strong>'+
+        '</div>'+
+        '<div class="row" style="margin-top:14px">'+
+          '<button class="btn lore" onclick="window.continueGame()">LEVEL '+state.level+' →</button>'+
+        '</div>'+
+        '<div class="tiny" style="margin-top:10px">Chaos increases. So does your legend.</div>'+
+      '</div>';
+  }
+
+  window.startGame = startGame;
+  window.resumeGame = resumeGame;
+  window.continueGame = continueGame;
+
+  function startGame(){
+    initAudio();
+    state.screen = 'play';
+    state.score = 0; state.lives = 3; state.level = 1; state.t = 0; state.lore = 0;
+    state.maxLore = modeCfg().maxLore;
+    then = 0; murphyTimer = 0;
+    document.getElementById('overlay').innerHTML = '';
+    initLevel(); 
+    updateHUD();
+    requestAnimationFrame(loop);
+  }
+
+  function resumeGame(){
+    state.screen = 'play'; 
+    then = 0;
+    document.getElementById('overlay').innerHTML = '';
+    requestAnimationFrame(loop);
+  }
+
+  function continueGame(){
+    state.screen = 'play'; 
+    then = 0;
+    document.getElementById('overlay').innerHTML = '';
+    initLevel(); 
+    updateHUD();
+    requestAnimationFrame(loop);
+  }
+
+  function initLevel(){
+    state.invert = 0; state.blackout = 0; state.slip = 0; state.trafficSlow = 0;
+    state.shield = 0; state.freeze = 0; state.speed = 0;
+
+    var cfg = modeCfg();
+    state.maxLore = cfg.maxLore;
+    state.shield = cfg.respawnShield;
+
+    player.col = Math.floor(WORLD.cols/2);
+    player.row = WORLD.rows - 1;
+    player.lastMove = -1;
+    player.renderX = player.col;
+    player.renderY = player.row;
+
+    ghost.col = Math.floor(WORLD.cols/2);
+    ghost.row = 0;
+    ghost.mood = cfg.ghostMoodBase + state.level * cfg.ghostMoodPerLevel;
+    ghost.lastMove = -1;
+    ghost.renderX = ghost.col;
+    ghost.renderY = ghost.row;
+
+    lanes.length = 0;
+    var baseSpeed = (0.65 + state.level * 0.18) * cfg.trafficMul;
+    for(var r = 2; r < WORLD.rows - 1; r++){
+      if(r === Math.floor(WORLD.rows/2)) continue;
+      var dir = Math.random() < 0.5 ? 1 : -1;
+      var cars = [];
+      var count = cfg.carCount + Math.floor(Math.random() * (1 + Math.floor(state.level/4)));
+      for(var i = 0; i < count; i++){
+        cars.push({
+          x: Math.random() * canvas.width,
+          speed: baseSpeed * (0.55 + Math.random() * 0.5) * dir,
+          w: WORLD.tile * (1.6 + Math.random() * 0.5),
+          h: WORLD.tile * 0.5,
+          hue: Math.random() * 360
+        });
+      }
+      lanes.push({ row: r, cars: cars, flipped: false });
+    }
+
+    pellets.length = 0;
+    var safeRows = [1, Math.floor(WORLD.rows/2), 0];
+    for(var ri = 0; ri < safeRows.length; ri++){
+      var rr = safeRows[ri];
+      for(var c = 0; c < WORLD.cols; c++){
+        if(Math.random() < 0.7) pellets.push({ c: c, r: rr });
+      }
+    }
+    state.totalPellets = pellets.length;
+    state.collected = 0;
+
+    loreOrbs.length = 0;
+    var loreCount = cfg.loreCountBase + Math.floor(state.level / cfg.loreCountDiv);
+    for(var li = 0; li < loreCount; li++){
+      var lr = safeRows[Math.floor(Math.random() * 2)];
+      var lc = Math.floor(Math.random() * WORLD.cols);
+      loreOrbs.push({ c: lc, r: lr });
+    }
+
+    walls.length = 0;
+    particles.length = 0;
+    updateMurphyIndicator();
+  }
+
+  function updateHUD(){
+    document.getElementById('score').textContent = state.score;
+    document.getElementById('level').textContent = state.level;
+    document.getElementById('lives').textContent = state.lives;
+    document.getElementById('mode').textContent = modeCfg().name;
+    var pct = state.totalPellets > 0 ? (state.collected / state.totalPellets) * 100 : 0;
+    document.querySelector('#meter i').style.width = pct + '%';
+    var lorePct = state.maxLore > 0 ? (state.lore / state.maxLore) * 100 : 0;
+    document.querySelector('#loreBar i').style.width = lorePct + '%';
+  }
+
+  // Main loop
+  var then = 0, murphyTimer = 0;
+  function loop(now){
+    if(state.screen !== 'play') return;
+    if(then === 0) then = now;
+    var dt = Math.min((now - then) / 1000, 0.1);
+    then = now;
+    state.t += dt;
+
+    // Decay effects with feedback when they end
+    var hadMurphy = hasMurphyEffect();
+    if(state.invert > 0){ 
+      state.invert -= dt;
+      if(state.invert <= 0){ state.invert = 0; }
+    }
+    if(state.blackout > 0){ 
+      state.blackout -= dt;
+      if(state.blackout <= 0){ state.blackout = 0; }
+    }
+    if(state.slip > 0){ 
+      state.slip -= dt;
+      if(state.slip <= 0){ state.slip = 0; }
+    }
+    if(state.trafficSlow > 0) state.trafficSlow -= dt;
+    if(state.shield > 0) state.shield -= dt;
+    if(state.freeze > 0) state.freeze -= dt;
+    if(state.speed > 0) state.speed -= dt;
+    
+    // Notify when Murphy effect ends
+    if(hadMurphy && !hasMurphyEffect()){
+      popup('✓ CLEAR!', 'lore');
+      tone(660, 0.08, 'sine', 0.08);
+    }
+
+    updatePlayer(dt);
+    updateCars(dt);
+    updateGhost(dt);
+    
+    // Smooth rendering positions - faster lerp for snappier feel
+    var lerpSpeed = 18;
+    player.renderX += (player.col - player.renderX) * lerpSpeed * dt;
+    player.renderY += (player.row - player.renderY) * lerpSpeed * dt;
+    ghost.renderX += (ghost.col - ghost.renderX) * lerpSpeed * dt;
+    ghost.renderY += (ghost.row - ghost.renderY) * lerpSpeed * dt;
+    
+    checkCollisions();
+    updateParticles(dt);
+    updateMurphyIndicator();
+
+    // Murphy events
+    var cfg = modeCfg();
+    murphyTimer += dt;
+    if(murphyTimer > cfg.murphyInterval && state.t > 2.5){
+      murphyTimer = 0;
+      var chance = cfg.murphyChanceBase + state.level * cfg.murphyChancePerLevel;
+      if(Math.random() < chance) triggerMurphy();
+    }
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function updatePlayer(dt){
+    var v = inputVector();
+    if(Math.abs(v.x) < 0.2 && Math.abs(v.y) < 0.2) return;
+
+    // Smoother movement delays
+    var moveDelay = 0.055; // Faster base movement
+    if(state.slip > 0) moveDelay = 0.14;
+    if(state.speed > 0) moveDelay = 0.035;
+    if(state.t - player.lastMove < moveDelay) return;
+
+    var dx = 0, dy = 0;
+    if(Math.abs(v.x) > Math.abs(v.y)) dx = v.x > 0 ? 1 : -1;
+    else dy = v.y > 0 ? 1 : -1;
+
+    var nc = player.col + dx, nr = player.row + dy;
+    if(!isWall(nc, nr)){
+      player.col = nc; player.row = nr;
+      player.lastMove = state.t;
+      SFX.hop();
+    }
+  }
+
+  function updateCars(dt){
+    var speedMult = 1;
+    if(state.freeze > 0) speedMult = 0.06;
+    else if(state.trafficSlow > 0) speedMult = 0.28;
+
+    for(var li = 0; li < lanes.length; li++){
+      var lane = lanes[li];
+      for(var ci = 0; ci < lane.cars.length; ci++){
+        var car = lane.cars[ci];
+        car.x += car.speed * speedMult * WORLD.tile * dt * 60;
+        if(car.speed > 0 && car.x > canvas.width + car.w) car.x = -car.w;
+        if(car.speed < 0 && car.x < -car.w) car.x = canvas.width + car.w;
+      }
+    }
+  }
+
+  function updateGhost(dt){
+    var cfg = modeCfg();
+    if(state.t - ghost.lastMove < cfg.ghostMoveDelay) return;
+
+    var choices = [];
+    var dirs = [{dc:-1,dr:0},{dc:1,dr:0},{dc:0,dr:-1},{dc:0,dr:1}];
+    
+    for(var di = 0; di < dirs.length; di++){
+      var d = dirs[di];
+      if(isWall(ghost.col + d.dc, ghost.row + d.dr)) continue;
+      var towardPlayer = 
+        (d.dc < 0 && player.col < ghost.col) ||
+        (d.dc > 0 && player.col > ghost.col) ||
+        (d.dr < 0 && player.row < ghost.row) ||
+        (d.dr > 0 && player.row > ghost.row);
+      var weight = towardPlayer ? Math.ceil(ghost.mood * 3) : 1;
+      for(var wi = 0; wi < weight; wi++) choices.push(d);
+    }
+
+    if(choices.length > 0){
+      var move = choices[Math.floor(Math.random() * choices.length)];
+      ghost.col += move.dc; ghost.row += move.dr;
+      ghost.lastMove = state.t;
+    }
+  }
+
+  function checkCollisions(){
+    var t = WORLD.tile;
+    var px = player.col * t, py = player.row * t;
+
+    // Car collision
+    for(var li = 0; li < lanes.length; li++){
+      var lane = lanes[li];
+      if(lane.row !== player.row) continue;
+      for(var ci = 0; ci < lane.cars.length; ci++){
+        var car = lane.cars[ci];
+        var carY = lane.row * t;
+        if(px < car.x + car.w - t*0.25 && px + t > car.x + t*0.25 &&
+           py < carY + car.h && py + t > carY){
+          if(state.shield > 0){
+            state.shield = 0; SFX.shield();
+            spawnParticles(px + t/2, py + t/2, 'rgba(6,255,165,0.9)', 10);
+          } else {
+            killPlayer();
+            return;
+          }
+        }
+      }
+    }
+
+    // Ghost collision
+    if(ghost.col === player.col && ghost.row === player.row){
+      if(state.shield > 0){
+        state.shield = 0; SFX.shield();
+        spawnParticles(px + t/2, py + t/2, 'rgba(6,255,165,0.9)', 10);
+      } else {
+        killPlayer();
+        return;
+      }
+    }
+
+    // Pellet collection
+    for(var pi = pellets.length - 1; pi >= 0; pi--){
+      var p = pellets[pi];
+      if(p.c === player.col && p.r === player.row){
+        state.score += 10 + state.level * 2;
+        state.collected++;
+        spawnParticles(p.c * t + t/2, p.r * t + t/2, 'rgba(255,215,0,0.9)', 5);
+        pellets.splice(pi, 1);
+        SFX.pellet();
+        updateHUD();
+        if(state.collected >= state.totalPellets) levelComplete();
+      }
+    }
+
+    // Lore orb collection
+    for(var oi = loreOrbs.length - 1; oi >= 0; oi--){
+      var o = loreOrbs[oi];
+      if(o.c === player.col && o.r === player.row){
+        state.score += 25;
+        if(state.lore < state.maxLore) state.lore++;
+        spawnParticles(o.c * t + t/2, o.r * t + t/2, 'rgba(6,255,165,0.9)', 8);
+        loreOrbs.splice(oi, 1);
+        applyLoreBonus();
+        SFX.lore();
+        updateHUD();
+      }
+    }
+
+    // Wall decay
+    for(var wi = walls.length - 1; wi >= 0; wi--){
+      walls[wi].temp -= 0.016;
+      if(walls[wi].temp <= 0) walls.splice(wi, 1);
+    }
+  }
+
+  function killPlayer(){
+    state.lives--;
+    SFX.death();
+    var t = WORLD.tile;
+    spawnParticles(player.col * t + t/2, player.row * t + t/2, 'rgba(255,68,68,0.9)', 14);
+    updateHUD();
+
+    if(state.lives <= 0){
+      setTimeout(showGameOver, 500);
+    } else {
+      player.col = Math.floor(WORLD.cols/2);
+      player.row = WORLD.rows - 1;
+      player.renderX = player.col;
+      player.renderY = player.row;
+      state.shield = modeCfg().respawnShield;
+      popup('⟳ Respawning...', 'lore');
+    }
+  }
+
+  function levelComplete(){
+    state.level++;
+    state.score += 100 * state.level;
+    SFX.levelUp();
+    for(var i = 0; i < 18; i++){
+      (function(idx){
+        setTimeout(function(){ 
+          spawnParticles(Math.random() * canvas.width, Math.random() * canvas.height, 'hsl('+(Math.random()*60+30)+', 100%, 60%)', 5); 
+        }, idx * 35);
+      })(i);
+    }
+    setTimeout(showLevelComplete, 700);
+  }
+
+  function applyLoreBonus(){
+    var cfg = modeCfg();
+    var bonusMult = cfg.name === 'MAYHEM' ? 0.75 : cfg.name === 'UTOPIAN' ? 1.4 : 1.15;
+    var bonuses = ['shield', 'trafficSlow', 'freeze', 'speed'];
+    var bonus = bonuses[Math.floor(Math.random() * bonuses.length)];
+    
+    if(bonus === 'shield'){ state.shield = 5 * bonusMult; popup('🛡️ SHIELD!', 'lore'); }
+    else if(bonus === 'trafficSlow'){ state.trafficSlow = 4.5 * bonusMult; popup('🐢 LANES SLOWED!', 'lore'); }
+    else if(bonus === 'freeze'){ state.freeze = 3.5 * bonusMult; popup('❄️ TRAFFIC FROZEN!', 'lore'); }
+    else if(bonus === 'speed'){ state.speed = 4 * bonusMult; popup('⚡ SPEED BOOST!', 'lore'); }
+  }
+
+  function useLore(){
+    var cfg = modeCfg();
+    var cost = cfg.loreCancelCost;
+    if(state.lore < cost){
+      popup('❌ NOT ENOUGH LORE', 'murphy');
+      return;
+    }
+    if(!hasMurphyEffect()){
+      popup('✓ NO MURPHY ACTIVE', 'lore');
+      return;
+    }
+
+    state.lore -= cost;
+    state.invert = 0; state.blackout = 0; state.slip = 0;
+    if(cfg.loreRemovesWalls) walls.length = 0;
+    SFX.cancel();
+    flashLore();
+    popup('✨ MURPHY CANCELLED!', 'lore');
+    updateHUD();
+    updateMurphyIndicator();
+  }
+
+  // Murphy Events
+  var MURPHY_EVENTS = [
+    { name: 'INVERT', fn: function(){ 
+      state.invert = 3.5 * modeCfg().murphyDurMul; 
+      popup('⚠️ CONTROLS INVERTED!', 'murphy'); 
+    }},
+    { name: 'BLACKOUT', fn: function(){ 
+      state.blackout = 2.5 * modeCfg().murphyDurMul; 
+      popup('🌑 BLACKOUT!', 'murphy'); 
+    }},
+    { name: 'SLIP', fn: function(){ 
+      state.slip = 3.5 * modeCfg().murphyDurMul; 
+      popup('🧊 SLIPPERY CONTROLS!', 'murphy'); 
+    }},
+    { name: 'WALL', fn: function(){
+      var c = Math.floor(Math.random() * WORLD.cols);
+      var r = 2 + Math.floor(Math.random() * (WORLD.rows - 4));
+      if(!(r === player.row && c === player.col)){
+        walls.push({ c: c, r: r, temp: 4 * modeCfg().wallDurMul });
+        popup('🧱 OBSTACLE SPAWNED!', 'murphy');
+      }
+    }},
+    { name: 'CHAOS', fn: function(){
+      if(lanes.length > 0){
+        var lane = lanes[Math.floor(Math.random() * lanes.length)];
+        for(var i = 0; i < lane.cars.length; i++) lane.cars[i].speed = -lane.cars[i].speed;
+        lane.flipped = !lane.flipped;
+        popup('🔄 LANE REVERSED!', 'murphy');
+      }
+    }},
+    { name: 'DOUBT', fn: function(){
+      ghost.mood = Math.min(1, ghost.mood + modeCfg().ghostRageBoost);
+      popup('👻 DOUBT INTENSIFIES!', 'murphy');
+    }}
+  ];
+
+  function triggerMurphy(){
+    var event = MURPHY_EVENTS[Math.floor(Math.random() * MURPHY_EVENTS.length)];
+    event.fn();
+    SFX.murphy();
+    flashMurphy();
+    updateMurphyIndicator();
+  }
+
+  // Drawing
+  function draw(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Blackout mode
+    if(state.blackout > 0){
+      ctx.fillStyle = 'rgba(0,0,0,0.96)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      var t = WORLD.tile;
+      var px = player.renderX * t + t/2;
+      var py = player.renderY * t + t/2;
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      var grad = ctx.createRadialGradient(px, py, 0, px, py, t * 2);
+      grad.addColorStop(0, 'rgba(0,0,0,1)');
+      grad.addColorStop(0.7, 'rgba(0,0,0,0.5)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(px, py, t * 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      
+      drawPlayer(player.renderX, player.renderY);
+      drawParticles();
+      return;
+    }
+
+    // Background gradient
+    ctx.save();
+    var bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bgGrad.addColorStop(0, 'rgba(7,11,34,0.25)');
+    bgGrad.addColorStop(1, 'rgba(7,11,34,0.45)');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+
+    // Safe zones highlight
+    var t = WORLD.tile;
+    ctx.fillStyle = 'rgba(157,180,255,0.04)';
+    ctx.fillRect(0, 0, canvas.width, t);
+    ctx.fillRect(0, t, canvas.width, t);
+    ctx.fillRect(0, Math.floor(WORLD.rows/2) * t, canvas.width, t);
+    ctx.fillRect(0, (WORLD.rows-1) * t, canvas.width, t);
+
+    // Goal banner
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,215,0,0.08)';
+    ctx.fillRect(0, 0, canvas.width, t);
+    ctx.font = '900 ' + Math.max(10, t*0.35) + 'px Orbitron, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(255,215,0,0.75)';
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = 'rgba(255,215,0,0.3)';
+    ctx.fillText('★ BECOME LEGEND ★', canvas.width/2, t*0.5);
+    ctx.restore();
+
+    // Lane marks
+    for(var li = 0; li < lanes.length; li++) drawLaneMark(lanes[li].row, lanes[li].flipped);
+
+    // Pellets & Lore
+    for(var pi = 0; pi < pellets.length; pi++) drawPellet(pellets[pi].c, pellets[pi].r);
+    for(var oi = 0; oi < loreOrbs.length; oi++) drawLoreOrb(loreOrbs[oi].c, loreOrbs[oi].r);
+
+    // Walls
+    for(var wi = 0; wi < walls.length; wi++) drawWall(walls[wi].c, walls[wi].r);
+
+    // Cars
+    for(var li = 0; li < lanes.length; li++){
+      var lane = lanes[li];
+      for(var ci = 0; ci < lane.cars.length; ci++) drawCar(lane.cars[ci], lane.row, lane.flipped);
+    }
+
+    // Ghost
+    drawGhost(ghost.renderX, ghost.renderY);
+
+    // Player
+    drawPlayer(player.renderX, player.renderY);
+
+    // Particles
+    drawParticles();
+
+    // Status tags
+    drawStatusTags();
+
+    // Vignette
+    vignette(0.55);
+  }
+
+  function drawLaneMark(r, flipped){
+    var t = WORLD.tile;
+    var y = r * t + t * 0.5;
+    ctx.save();
+    ctx.globalAlpha = flipped ? 0.2 : 0.08;
+    ctx.strokeStyle = flipped ? 'rgba(255,68,68,0.8)' : 'rgba(157,180,255,0.6)';
+    ctx.lineWidth = flipped ? 3 : 2;
+    ctx.setLineDash([8, 10]);
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  function drawCar(car, row, flipped){
+    var t = WORLD.tile;
+    var y = row * t + (t - car.h) / 2;
+    ctx.save();
+    var grad = ctx.createLinearGradient(car.x, y, car.x + car.w, y);
+    var a = flipped ? 0.2 : 0.08;
+    grad.addColorStop(0, 'hsla('+car.hue+', 75%, 52%, '+(0.55+a)+')');
+    grad.addColorStop(1, 'hsla('+((car.hue+35)%360)+', 75%, 48%, '+(0.35+a)+')');
+    ctx.fillStyle = grad;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = flipped ? 'rgba(255,68,68,0.15)' : 'rgba(255,215,0,0.08)';
+    roundRect(car.x, y, car.w, car.h, 6, true, false);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    roundRect(car.x + car.w*0.12, y + car.h*0.18, car.w*0.22, car.h*0.26, 3, true, false);
+    roundRect(car.x + car.w*0.58, y + car.h*0.18, car.w*0.22, car.h*0.26, 3, true, false);
+    ctx.restore();
+  }
+
+  function drawPellet(c, r){
+    var t = WORLD.tile;
+    var x = c * t + t * 0.5, y = r * t + t * 0.5;
+    var pulse = 0.7 + 0.3 * Math.sin(state.t * 5 + c + r);
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,215,0,'+(0.4 + 0.3*pulse)+')';
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = 'rgba(255,215,0,0.25)';
+    ctx.beginPath();
+    ctx.arc(x, y, t * 0.09, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawLoreOrb(c, r){
+    var t = WORLD.tile;
+    var x = c * t + t * 0.5, y = r * t + t * 0.5;
+    var pulse = 0.6 + 0.4 * Math.sin(state.t * 4 + c * 0.5);
+    ctx.save();
+    ctx.fillStyle = 'rgba(6,255,165,'+(0.4 + 0.35*pulse)+')';
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = 'rgba(6,255,165,0.25)';
+    for(var i = 0; i < 7; i++){
+      var a = (Math.PI * 2 / 7) * i + state.t * 0.4;
+      ctx.beginPath();
+      ctx.arc(x + Math.cos(a) * t * 0.12, y + Math.sin(a) * t * 0.12, t * 0.035, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, t * 0.09, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawWall(c, r){
+    var t = WORLD.tile;
+    var x = c * t, y = r * t;
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,215,0,0.35)';
+    ctx.strokeStyle = 'rgba(255,68,68,0.5)';
+    ctx.lineWidth = 2;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = 'rgba(255,68,68,0.15)';
+    roundRect(x + 2, y + 2, t - 4, t - 4, 6, true, true);
+    ctx.restore();
+  }
+
+  function drawPlayer(c, r){
+    var t = WORLD.tile;
+    var x = c * t + t * 0.5, y = r * t + t * 0.5;
+    ctx.save();
+
+    // Shield ring
+    if(state.shield > 0){
+      var sp = 0.5 + 0.5 * Math.sin(state.t * 10);
+      ctx.strokeStyle = 'rgba(6,255,165,'+(0.5*sp)+')';
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 14;
+      ctx.shadowColor = 'rgba(6,255,165,0.35)';
+      ctx.beginPath();
+      ctx.arc(x, y, t * 0.34, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Body
+    var pulse = 0.88 + 0.12 * Math.sin(state.t * 7);
+    ctx.fillStyle = 'rgba(255,215,0,'+(0.9*pulse)+')';
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = 'rgba(255,215,0,0.4)';
+    ctx.beginPath();
+    ctx.arc(x, y, t * 0.23, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Mouth
+    var v = inputVector();
+    var ang = Math.atan2(v.y, v.x);
+    if(Math.abs(v.x) + Math.abs(v.y) < 0.1) ang = -Math.PI / 2;
+    var open = 0.26 + 0.16 * Math.sin(state.t * 10);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.arc(x, y, t * 0.25, ang - open, ang + open);
+    ctx.closePath();
+    ctx.fill();
+
+    // M glyph
+    ctx.strokeStyle = 'rgba(10,14,39,0.5)';
+    ctx.lineWidth = Math.max(1.5, t * 0.05);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    var s = t * 0.11;
+    ctx.beginPath();
+    ctx.moveTo(x - s, y + s * 0.5);
+    ctx.lineTo(x - s, y - s * 0.5);
+    ctx.lineTo(x, y + s * 0.15);
+    ctx.lineTo(x + s, y - s * 0.5);
+    ctx.lineTo(x + s, y + s * 0.5);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawGhost(c, r){
+    var t = WORLD.tile;
+    var x = c * t + t * 0.5, y = r * t + t * 0.5;
+    var glow = 0.1 + ghost.mood * 0.2;
+    ctx.save();
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = 'rgba(255,68,68,'+glow+')';
+
+    var w = t * 0.48, h = t * 0.52;
+    var topY = y - h * 0.28;
+    ctx.fillStyle = 'rgba(255,68,68,'+(0.45 + ghost.mood*0.2)+')';
+    roundRect(x - w/2, topY, w, h, 12, true, false);
+
+    ctx.shadowBlur = 0;
+    for(var i = 0; i < 4; i++){
+      var sx = x - w/2 + (i + 0.5) * (w/4);
+      ctx.beginPath();
+      ctx.arc(sx, topY + h, w/12, 0, Math.PI, true);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath();
+    ctx.arc(x - w*0.16, y - h*0.04, w*0.08, 0, Math.PI*2);
+    ctx.arc(x + w*0.16, y - h*0.04, w*0.08, 0, Math.PI*2);
+    ctx.fill();
+
+    var dx = clamp(player.col - ghost.col, -1, 1) * w * 0.03;
+    var dy = clamp(player.row - ghost.row, -1, 1) * w * 0.03;
+    ctx.fillStyle = 'rgba(255,215,0,0.8)';
+    ctx.beginPath();
+    ctx.arc(x - w*0.16 + dx, y - h*0.04 + dy, w*0.035, 0, Math.PI*2);
+    ctx.arc(x + w*0.16 + dx, y - h*0.04 + dy, w*0.035, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawStatusTags(){
+    var t = WORLD.tile;
+    var tags = [];
+    if(state.invert > 0) tags.push({ label: '⚠️ INVERTED '+Math.ceil(state.invert)+'s', color: 'rgba(255,68,68,0.9)' });
+    if(state.slip > 0) tags.push({ label: '🧊 SLIPPERY '+Math.ceil(state.slip)+'s', color: 'rgba(255,68,68,0.9)' });
+    if(state.shield > 0) tags.push({ label: '🛡️ SHIELD '+Math.ceil(state.shield)+'s', color: 'rgba(6,255,165,0.9)' });
+    if(state.trafficSlow > 0) tags.push({ label: '🐢 SLOW '+Math.ceil(state.trafficSlow)+'s', color: 'rgba(6,255,165,0.9)' });
+    if(state.freeze > 0) tags.push({ label: '❄️ FROZEN '+Math.ceil(state.freeze)+'s', color: 'rgba(157,180,255,0.9)' });
+    if(state.speed > 0) tags.push({ label: '⚡ SPEED '+Math.ceil(state.speed)+'s', color: 'rgba(255,215,0,0.9)' });
+    if(!tags.length) return;
+
+    ctx.save();
+    ctx.font = '700 ' + Math.max(9, t*0.16) + 'px Orbitron, monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    var y0 = canvas.height - t * 0.4;
+    var x0 = 8;
+    for(var i = 0; i < tags.length; i++){
+      var tag = tags[i];
+      var metrics = ctx.measureText(tag.label);
+      var width = metrics.width + 12;
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      roundRect(x0 - 4, y0 - 10, width, 20, 6, true, false);
+      ctx.strokeStyle = tag.color;
+      ctx.lineWidth = 2;
+      roundRect(x0 - 4, y0 - 10, width, 20, 6, false, true);
+      ctx.fillStyle = tag.color;
+      ctx.fillText(tag.label, x0, y0);
+      x0 += width + 6;
+    }
+    ctx.restore();
+  }
+
+  function vignette(strength){
+    strength = strength || 0.55;
+    ctx.save();
+    var g = ctx.createRadialGradient(canvas.width/2, canvas.height/2, canvas.width*0.06, canvas.width/2, canvas.height/2, canvas.width*0.55);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(1, 'rgba(0,0,0,'+strength+')');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
+
+  function roundRect(x, y, w, h, r, fill, stroke){
+    var rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+    if(fill) ctx.fill();
+    if(stroke) ctx.stroke();
+  }
+
+  function isWall(c, r){
+    if(c < 0 || c >= WORLD.cols || r < 0 || r >= WORLD.rows) return true;
+    if(r === 0 || r === WORLD.rows - 1) return false;
+    if(r === 1 || r === Math.floor(WORLD.rows/2)) return false;
+    for(var i = 0; i < walls.length; i++){
+      if(walls[i].c === c && walls[i].r === r) return true;
+    }
+    return false;
+  }
+
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    WORLD.tile = Math.min(canvas.width / WORLD.cols, canvas.height / WORLD.rows);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  showTitle();
+  updateHUD();
+})();
+</script>
+</body>
+</html>
