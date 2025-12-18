@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Monkey Invaders 2</title>
+  <style>
+    :root {
+      --bg: #050816;
+      --panel: #0d102b;
+      --glow: #f7b500;
+      --accent: #6ce7ff;
+      --danger: #ff5f6d;
+      --success: #8dff6e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Press Start 2P", "Segoe UI", Tahoma, sans-serif;
+      background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04), transparent 35%),
+                  radial-gradient(circle at 80% 0%, rgba(255,255,255,0.06), transparent 40%),
+                  radial-gradient(circle at 50% 100%, rgba(255,255,255,0.08), transparent 35%),
+                  var(--bg);
+      color: #f6f7fb;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 24px;
+      gap: 16px;
+    }
+    h1 {
+      margin: 0;
+      text-shadow: 0 0 12px rgba(247, 181, 0, 0.75);
+      letter-spacing: 2px;
+    }
+    .hud {
+      width: min(1100px, 100%);
+      background: linear-gradient(145deg, var(--panel), #0b0e23);
+      border: 2px solid rgba(247, 181, 0, 0.3);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.45), 0 0 24px rgba(108, 231, 255, 0.35);
+      border-radius: 18px;
+      padding: 14px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .hud .pill {
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 120px;
+      justify-content: center;
+    }
+    .pill strong { color: var(--glow); }
+    .pill.bad { color: var(--danger); }
+    .pill.good { color: var(--success); }
+    canvas {
+      width: min(1100px, 100%);
+      height: min(700px, calc(100vh - 220px));
+      border-radius: 20px;
+      border: 2px solid rgba(247, 181, 0, 0.4);
+      background: radial-gradient(circle at 20% 20%, rgba(108, 231, 255, 0.07), transparent 30%),
+                  radial-gradient(circle at 80% 0%, rgba(247, 181, 0, 0.06), transparent 35%),
+                  #050816;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.65);
+      image-rendering: pixelated;
+    }
+    .footer { opacity: 0.75; font-size: 13px; }
+    .tooltip { font-size: 12px; opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <h1>🐒 Monkey Invaders 2</h1>
+  <div class="hud">
+    <div class="pill"><span>Level</span> <strong id="level">1</strong></div>
+    <div class="pill"><span>Score</span> <strong id="score">0</strong></div>
+    <div class="pill"><span>Lives</span> <strong id="lives">3</strong></div>
+    <div class="pill good"><span>Boost</span> <strong id="boost">Ready</strong></div>
+    <div class="pill bad"><span>Debuff</span> <strong id="debuff">None</strong></div>
+    <div class="pill"><span>Wave</span> <strong id="wave">Regular</strong></div>
+  </div>
+  <canvas id="game" width="1100" height="700"></canvas>
+  <div class="tooltip">Arrow keys or A/D to move · Space / Z to shoot · B to trigger banana burst · Clear waves to level up. Boss arrives every 10 levels and splits into more trouble.</div>
+  <div class="footer">Disadvantages drop like bombs; dodge them or suffer temporary debuffs. Difficulty scales with every wave while keeping the retro feel intact.</div>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    const hud = {
+      level: document.getElementById('level'),
+      score: document.getElementById('score'),
+      lives: document.getElementById('lives'),
+      boost: document.getElementById('boost'),
+      debuff: document.getElementById('debuff'),
+      wave: document.getElementById('wave')
+    };
+
+    const keys = {};
+    window.addEventListener('keydown', (e) => { keys[e.code] = true; if(['Space','KeyZ'].includes(e.code)) e.preventDefault(); });
+    window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    const player = {
+      x: w / 2,
+      y: h - 60,
+      w: 42,
+      h: 26,
+      speed: 6,
+      baseSpeed: 6,
+      color: '#f7b500',
+      fireCooldown: 0,
+      fireRate: 14,
+      baseFireRate: 14,
+      lives: 3,
+      invuln: 0,
+      burst: 3,
+    };
+
+    let bullets = [];
+    let enemyBullets = [];
+    let enemies = [];
+    let powerDowns = [];
+    let level = 1;
+    let score = 0;
+    let debuffTimer = 0;
+    let activeDebuff = null;
+    let waveType = 'Regular';
+    let nextLevelReady = false;
+
+    function rand(min, max) { return Math.random() * (max - min) + min; }
+
+    function drawShip(x, y, color = player.color) {
+      ctx.fillStyle = '#000';
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 10;
+      ctx.fillRect(x - 18, y - 8, 36, 16);
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = color;
+      ctx.fillRect(x - 12, y - 6, 24, 12);
+      ctx.fillRect(x - 6, y - 12, 12, 12);
+    }
+
+    function drawEnemy(enemy) {
+      ctx.save();
+      ctx.translate(enemy.x, enemy.y);
+      ctx.fillStyle = enemy.color;
+      ctx.beginPath();
+      ctx.rect(-enemy.w/2, -enemy.h/2, enemy.w, enemy.h);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-enemy.w/2, -enemy.h/2, enemy.w, enemy.h);
+      ctx.restore();
+    }
+
+    function drawPowerDown(p) {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.fillStyle = p.type === 'slow' ? 'rgba(255,95,109,0.9)' : 'rgba(126,87,194,0.9)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.font = 'bold 12px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(p.symbol, 0, 1);
+      ctx.restore();
+    }
+
+    function spawnWave() {
+      enemies = [];
+      enemyBullets = [];
+      powerDowns = [];
+      const baseRows = 3 + Math.floor(level / 3);
+      const cols = 8;
+      const spacingX = w / (cols + 1);
+      const spacingY = 60;
+      const speedBoost = 0.5 + level * 0.05;
+      if (level % 10 === 0) {
+        waveType = 'Boss Splitter';
+        spawnBoss();
+        return;
+      }
+      waveType = level % 5 === 0 ? 'Rush' : 'Regular';
+      for (let r = 0; r < baseRows; r++) {
+        for (let c = 0; c < cols; c++) {
+          enemies.push({
+            x: spacingX * (c + 1),
+            y: 80 + r * spacingY,
+            w: 38,
+            h: 26,
+            vx: (r % 2 === 0 ? 1 : -1) * speedBoost,
+            vy: 0,
+            hp: 1 + Math.floor(level / 4),
+            color: r % 2 === 0 ? '#6ce7ff' : '#8dff6e',
+            fireTimer: rand(80, 160) / Math.max(1, level * 0.1),
+            type: 'grunt'
+          });
+        }
+      }
+    }
+
+    function spawnBoss(size = 'giant', x = w / 2, y = 140) {
+      const config = {
+        giant: { w: 160, h: 90, hp: 50 + level * 4, color: '#ff5f6d', speed: 1.2 },
+        medium: { w: 90, h: 60, hp: 20 + level * 2, color: '#ff9f43', speed: 1.6 },
+        small: { w: 60, h: 40, hp: 8 + level, color: '#ffd166', speed: 2.0 }
+      }[size];
+      enemies.push({
+        x, y,
+        w: config.w,
+        h: config.h,
+        vx: rand(-config.speed, config.speed),
+        vy: rand(0.4, 1),
+        hp: config.hp,
+        color: config.color,
+        fireTimer: 50,
+        type: size === 'giant' ? 'boss' : size === 'medium' ? 'mid-boss' : 'mini-boss'
+      });
+    }
+
+    function updateHUD() {
+      hud.level.textContent = level;
+      hud.score.textContent = score;
+      hud.lives.textContent = player.lives;
+      hud.boost.textContent = player.burst > 0 ? `${player.burst}x burst` : 'Recharging';
+      hud.boost.style.color = player.burst > 0 ? 'var(--success)' : 'var(--danger)';
+      hud.debuff.textContent = activeDebuff ? `${activeDebuff} (${Math.ceil(debuffTimer/60)}s)` : 'None';
+      hud.debuff.style.color = activeDebuff ? 'var(--danger)' : 'inherit';
+      hud.wave.textContent = waveType;
+    }
+
+    function applyDebuff(type) {
+      activeDebuff = type;
+      debuffTimer = 60 * 6;
+      if (type === 'slow') {
+        player.speed = player.baseSpeed * 0.55;
+      } else if (type === 'jam') {
+        player.fireRate = player.baseFireRate * 1.8;
+      }
+    }
+
+    function clearDebuff() {
+      activeDebuff = null;
+      debuffTimer = 0;
+      player.speed = player.baseSpeed;
+      player.fireRate = player.baseFireRate;
+    }
+
+    function fireBullet() {
+      bullets.push({ x: player.x, y: player.y - player.h / 2, vy: -10, w: 4, h: 10 });
+      player.fireCooldown = player.fireRate;
+    }
+
+    function fireBurst() {
+      if (player.burst <= 0) return;
+      for (let i = -1; i <= 1; i++) {
+        bullets.push({ x: player.x + i * 10, y: player.y - player.h / 2, vy: -12, w: 4, h: 12 });
+      }
+      player.burst -= 1;
+      player.fireCooldown = player.fireRate * 1.2;
+    }
+
+    function spawnPowerDown(x, y) {
+      const type = Math.random() > 0.5 ? 'slow' : 'jam';
+      powerDowns.push({ x, y, vy: rand(2, 4), type, symbol: type === 'slow' ? '⏳' : '🔻' });
+    }
+
+    function update() {
+      ctx.clearRect(0,0,w,h);
+      // Player movement
+      let move = 0;
+      if (keys['ArrowLeft'] || keys['KeyA']) move -= 1;
+      if (keys['ArrowRight'] || keys['KeyD']) move += 1;
+      player.x = Math.max(player.w/2, Math.min(w - player.w/2, player.x + move * player.speed));
+      if (player.fireCooldown > 0) player.fireCooldown--;
+      if ((keys['Space'] || keys['KeyZ']) && player.fireCooldown <= 0) fireBullet();
+      if (keys['KeyB'] && player.fireCooldown <= 0) fireBurst();
+
+      // Update bullets
+      bullets.forEach(b => b.y += b.vy);
+      bullets = bullets.filter(b => b.y + b.h > 0);
+
+      // Enemy logic
+      enemies.forEach((en, idx) => {
+        en.x += en.vx;
+        en.y += en.vy || 0;
+        if (en.x < en.w/2 || en.x > w - en.w/2) en.vx *= -1;
+        en.fireTimer -= 1;
+        const fireChance = en.type.includes('boss') ? 0.5 : 0.15 + level * 0.01;
+        if (en.fireTimer <= 0) {
+          if (Math.random() < fireChance) {
+            const spread = en.type.includes('boss') ? 2 : 1;
+            for (let i = -spread; i <= spread; i++) {
+              enemyBullets.push({ x: en.x + i * 8, y: en.y + en.h / 2, vy: 4 + Math.random() * (2 + level * 0.05), w: 5, h: 10 });
+            }
+          }
+          en.fireTimer = rand(50, 120) / Math.max(1, level * 0.1);
+        }
+      });
+
+      // Enemy bullets
+      enemyBullets.forEach(b => b.y += b.vy);
+      enemyBullets = enemyBullets.filter(b => b.y - b.h < h + 40);
+
+      // Collisions: player vs enemy bullet
+      if (player.invuln > 0) player.invuln--;
+      enemyBullets = enemyBullets.filter(b => {
+        if (rectsCollide(b, player) && player.invuln <= 0) {
+          player.lives -= 1;
+          player.invuln = 120;
+          if (player.lives <= 0) resetGame();
+          return false;
+        }
+        return true;
+      });
+
+      // Bullets vs enemies
+      bullets = bullets.filter(b => {
+        for (const en of enemies) {
+          if (rectsCollide(b, en)) {
+            en.hp -= 1;
+            score += 10;
+            if (Math.random() < 0.12) spawnPowerDown(en.x, en.y);
+            return false;
+          }
+        }
+        return true;
+      });
+
+      // Remove dead enemies & spawn splits
+      enemies = enemies.flatMap(en => {
+        if (en.hp > 0) return [en];
+        if (en.type === 'boss') {
+          spawnBoss('medium', en.x - 80, en.y + 30);
+          spawnBoss('medium', en.x + 80, en.y + 30);
+          score += 500;
+          return [];
+        }
+        if (en.type === 'mid-boss') {
+          spawnBoss('small', en.x - 50, en.y + 20);
+          spawnBoss('small', en.x + 50, en.y + 20);
+          score += 220;
+          return [];
+        }
+        if (en.type === 'mini-boss') {
+          score += 120;
+          return [];
+        }
+        score += 30;
+        return [];
+      });
+
+      // Power-downs drop like bombs
+      powerDowns.forEach(p => p.y += p.vy);
+      powerDowns = powerDowns.filter(p => p.y < h + 30);
+      powerDowns = powerDowns.filter(p => {
+        if (rectsCollide({x:p.x, y:p.y, w:18, h:18}, player)) {
+          applyDebuff(p.type);
+          return false;
+        }
+        return true;
+      });
+
+      // Debuff timer
+      if (activeDebuff) {
+        debuffTimer -= 1;
+        if (debuffTimer <= 0) clearDebuff();
+      }
+
+      // Level clearing
+      if (enemies.length === 0 && !nextLevelReady) {
+        nextLevelReady = true;
+        setTimeout(() => {
+          level += 1;
+          player.burst = Math.min(3, player.burst + 1);
+          nextLevelReady = false;
+          spawnWave();
+        }, 900);
+      }
+
+      // Drawing
+      drawPlayer();
+      bullets.forEach(b => drawRect(b, '#6ce7ff'));
+      enemyBullets.forEach(b => drawRect(b, 'rgba(255,95,109,0.85)'));
+      powerDowns.forEach(drawPowerDown);
+      enemies.forEach(drawEnemy);
+      updateHUD();
+      requestAnimationFrame(update);
+    }
+
+    function drawRect(r, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(r.x - r.w/2, r.y - r.h/2, r.w, r.h);
+    }
+
+    function drawPlayer() {
+      drawShip(player.x, player.y, player.invuln > 0 ? '#6ce7ff' : player.color);
+      if (player.invuln > 0) {
+        ctx.strokeStyle = 'rgba(108,231,255,0.4)';
+        ctx.setLineDash([6,6]);
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, 32, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    function rectsCollide(a, b) {
+      return Math.abs(a.x - b.x) < (a.w/2 + b.w/2) && Math.abs(a.y - b.y) < (a.h/2 + b.h/2);
+    }
+
+    function resetGame() {
+      level = 1;
+      score = 0;
+      player.lives = 3;
+      player.burst = 3;
+      clearDebuff();
+      spawnWave();
+    }
+
+    spawnWave();
+    update();
+  </script>
+</body>
+</html>
